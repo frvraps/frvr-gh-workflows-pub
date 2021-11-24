@@ -1,0 +1,43 @@
+name: "[CI/CD] Build Web and Facebook Instant"
+
+on:
+  workflow_call:
+
+jobs:
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the game repo
+        uses: actions/checkout@v2
+
+      - id: game
+        name: Get game name
+        run: |
+          export GAME=$(basename "$PWD" | sed "s/game\-//")
+          echo "GAME=$GAME" >> $GITHUB_ENV
+          echo "::set-output name=game::$GAME"
+    
+      - id: set_msg
+        name: Set deploy message
+        run: |-
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          CMT_MSG=$(git log -1 --pretty=%B)
+          DEPLOY_MSG="[CD] Github deploy. Msg: $CMT_MSG Trigger: ${{github.event_name}} Branch: $BRANCH Ref: $SHORT_SHA by: ${{ github.actor }}"
+          echo "::set-output name=msg::$DEPLOY_MSG"
+      
+      - id: get_meta
+        name: Get game meta info
+        run: |-
+          content=$(cat ./meta/meta.json)
+          # the following lines are only required for multi line json
+          content="${content//'%'/'%25'}"
+          content="${content//$'\n'/'%0A'}"
+          content="${content//$'\r'/'%0D'}"
+          echo "::set-output name=meta::$content"
+    outputs:
+      fst_version: ${{ fromJson(steps.get_meta.outputs.meta)['fst-tools-version'] || 'latest' }}
+      game_name: ${{ steps.game.outputs.game }}
+      deploy_msg: ${{ steps.set_msg.outputs.msg }}
