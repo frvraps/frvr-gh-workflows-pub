@@ -18,6 +18,8 @@ on:
     secrets:
       CR_PAT:
         required: true
+      GH_TOKEN:
+        required: true
 
 jobs:
   gather_game_data:
@@ -86,7 +88,7 @@ jobs:
           repository: frvraps/frvr-internal
           path: frvr/frvr-internal
           ref: master
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup internal symlink
         run: ln -s "$GITHUB_WORKSPACE/frvr/frvr-internal" /frvr/frvr-internal
@@ -97,7 +99,7 @@ jobs:
           repository: frvraps/frvr-data
           path: frvr/frvr-data
           ref: master
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Setup data symlink
         run: ln -s "$GITHUB_WORKSPACE/frvr/frvr-data" /frvr/frvr-data
