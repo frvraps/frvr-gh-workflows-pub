@@ -15,6 +15,12 @@ on:
       web_deploy_user_email:
         required: true
         type: string
+      automation_image:
+        required: true
+        type: string
+      cicd_web_slack_webhook:
+        required: true
+        type: string   
     secrets:
       CR_PAT:
         required: true
@@ -154,3 +160,68 @@ jobs:
           path: /frvr/frvr-out/Builds/
     outputs:
       deploy_url: ${{ steps.get_deploy_url.outputs.deploy_url }}
+
+  run_web_gui_automated_tests:
+    name: GUI automated tests on web
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_and_deploy_web]
+    defaults:
+      run:
+        working-directory: /app/tests
+    env:
+      TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+      HEADLESS: true
+      TESTS_PATH: ${{ github.workspace }}/game/tests
+    container:
+      image: ${{ inputs.automation_image }}:latest
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/game
+
+      - name: Run general tests
+        run: npm run tests
+
+      - name: Archive tests reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: tests-reports
+          path: /app/reports/
+
+      - name: Send Success Slack Msg (#ci-cd_web)
+        uses: bluenovaio/action-slack@main 
+        if: ${{ success() }}
+        with:
+          username: "Github Workflow"
+          icon_emoji: ":robot_face:"
+          text: |-
+            :cloud::rocket::cloud: *Tests succeeded!* :cloud::sun_small_cloud::cloud:
+            Repository: ${{ github.repository }}
+            Ref: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Workflow executed by: ${{ github.actor }}
+            Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
+            Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
+          webhook_url: ${{ inputs.cicd_web_slack_webhook }}
+      
+      - name: Send Failure Slack Msg (#ci-cd_web)
+        uses: bluenovaio/action-slack@main 
+        if: ${{ failure() }}
+        with:
+          username: "Github Workflow"
+          icon_emoji: ":robot_face:"
+          text: |-
+            :fire::exploding_head::fire: *Tests failed!* :fire::thisisfine::fire:
+            Repository: ${{ github.repository }}
+            Ref: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Workflow executed by: ${{ github.actor }}
+            Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
+            Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
+          webhook_url: ${{ inputs.cicd_web_slack_webhook }}
