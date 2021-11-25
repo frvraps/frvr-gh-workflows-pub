@@ -42,6 +42,11 @@ jobs:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
           path: .github/actions
+
+      - name: Validation
+        run: |
+          ls -lR ./.github/actions
+          
       - name: Private Action
         uses: ./.github/actions/getmetadata
 
