@@ -41,7 +41,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          path: .github/actions
+          path: ./
 
       - name: Validation
         run: |
