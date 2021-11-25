@@ -46,7 +46,11 @@ jobs:
       - name: Validation
         run: |
           ls -lR ./.github/actions
-          
+
+      # Enable tmate debugging
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: Private Action
         uses: ./.github/actions/getmetadata
 
