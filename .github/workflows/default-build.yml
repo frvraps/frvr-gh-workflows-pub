@@ -36,7 +36,6 @@ jobs:
     name: Gather game metadata
     runs-on: ubuntu-latest
     steps:
-
       - name: Downlaod game repo
         uses: actions/checkout@v2
 
@@ -58,10 +57,13 @@ jobs:
       - id: metadata
         name: Execute metadata action
         uses: ./actions/.github/actions/getmetadata
+    outputs:
+      # replace with proper version extracted from game config
+      fst_version: ${{ steps.metadata.outputs.fst_version }}
+      game_name: ${{ steps.metadata.outputs.game_name }}
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
-      # Enable tmate debugging
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
+
 
   ## --- BUILD AND DEPLOY TO WEB ---
   build_and_deploy_web:
@@ -70,7 +72,7 @@ jobs:
     timeout-minutes: 15
     needs: [gather_game_data]
     env:
-      GAME: ${{ needs.gather_game_data.steps.metadata.outputs.game_name }}
+      GAME: ${{ needs.gather_game_data.outputs.game_name }}
       DEPLOY_MSG: ${{ needs.gather_game_data.outputs.deploy_msg }}
     container:
       image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
