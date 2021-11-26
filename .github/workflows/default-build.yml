@@ -35,35 +35,25 @@ jobs:
   gather_game_data:
     name: Gather game metadata
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Downlaod game repo
+      - name: Checkout game repo
         uses: actions/checkout@v2
 
-      - name: Download private actions
+      - name: Checkout private actions
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
-      # - name: Validation
-      #   run: |
-      #     ls -lR ./.github/actions
-
-      # # Enable tmate debugging
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
       - id: metadata
         name: Execute metadata action
         uses: ./actions/.github/actions/getmetadata
     outputs:
-      # replace with proper version extracted from game config
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
-
-
 
   ## --- BUILD AND DEPLOY TO WEB ---
   build_and_deploy_web:
@@ -156,69 +146,69 @@ jobs:
     outputs:
       deploy_url: ${{ steps.get_deploy_url.outputs.deploy_url }}
 
-  run_web_gui_automated_tests:
-    name: GUI automated tests on web
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_and_deploy_web]
-    defaults:
-      run:
-        working-directory: /app/tests
-    env:
-      TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
-      HEADLESS: true
-      TESTS_PATH: ${{ github.workspace }}/game/tests
-    container:
-      image: ${{ inputs.automation_image }}:latest
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v2
-        with:
-          path: ${{ github.workspace }}/game
+  # run_web_gui_automated_tests:
+  #   name: GUI automated tests on web
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [gather_game_data, build_and_deploy_web]
+  #   defaults:
+  #     run:
+  #       working-directory: /app/tests
+  #   env:
+  #     TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+  #     HEADLESS: true
+  #     TESTS_PATH: ${{ github.workspace }}/game/tests
+  #   container:
+  #     image: ${{ inputs.automation_image }}:latest
+  #     credentials:
+  #       username: ${{ github.repository_owner }}
+  #       password: ${{ secrets.CR_PAT }}
+  #   steps:
+  #     - name: Checkout the repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: ${{ github.workspace }}/game
 
-      - name: Run general tests
-        run: npm run tests
+  #     - name: Run general tests
+  #       run: npm run tests
 
-      - name: Archive tests reports
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: tests-reports
-          path: /app/reports/
+  #     - name: Archive tests reports
+  #       if: ${{ always() }}
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: tests-reports
+  #         path: /app/reports/
 
-      - name: Send Success Slack Msg (#ci-cd_web)
-        uses: bluenovaio/action-slack@main 
-        if: ${{ success() }}
-        with:
-          username: "Github Workflow"
-          icon_emoji: ":robot_face:"
-          text: |-
-            :cloud::rocket::cloud: *Tests succeeded!* :cloud::sun_small_cloud::cloud:
-            Repository: ${{ github.repository }}
-            Ref: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-            Workflow executed by: ${{ github.actor }}
-            Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
-            Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
-          webhook_url: ${{ inputs.cicd_web_slack_webhook }}
+  #     - name: Send Success Slack Msg (#ci-cd_web)
+  #       uses: bluenovaio/action-slack@main 
+  #       if: ${{ success() }}
+  #       with:
+  #         username: "Github Workflow"
+  #         icon_emoji: ":robot_face:"
+  #         text: |-
+  #           :cloud::rocket::cloud: *Tests succeeded!* :cloud::sun_small_cloud::cloud:
+  #           Repository: ${{ github.repository }}
+  #           Ref: ${{ github.ref }}
+  #           Commit: ${{ github.sha }}
+  #           Workflow executed by: ${{ github.actor }}
+  #           Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
+  #           Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
+  #         webhook_url: ${{ inputs.cicd_web_slack_webhook }}
       
-      - name: Send Failure Slack Msg (#ci-cd_web)
-        uses: bluenovaio/action-slack@main 
-        if: ${{ failure() }}
-        with:
-          username: "Github Workflow"
-          icon_emoji: ":robot_face:"
-          text: |-
-            :fire::exploding_head::fire: *Tests failed!* :fire::thisisfine::fire:
-            Repository: ${{ github.repository }}
-            Ref: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-            Workflow executed by: ${{ github.actor }}
-            Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
-            Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
-          webhook_url: ${{ inputs.cicd_web_slack_webhook }}
+  #     - name: Send Failure Slack Msg (#ci-cd_web)
+  #       uses: bluenovaio/action-slack@main 
+  #       if: ${{ failure() }}
+  #       with:
+  #         username: "Github Workflow"
+  #         icon_emoji: ":robot_face:"
+  #         text: |-
+  #           :fire::exploding_head::fire: *Tests failed!* :fire::thisisfine::fire:
+  #           Repository: ${{ github.repository }}
+  #           Ref: ${{ github.ref }}
+  #           Commit: ${{ github.sha }}
+  #           Workflow executed by: ${{ github.actor }}
+  #           Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
+  #           Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
+  #         webhook_url: ${{ inputs.cicd_web_slack_webhook }}
 
   
