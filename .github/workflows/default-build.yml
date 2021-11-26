@@ -36,6 +36,9 @@ jobs:
     name: Gather game metadata
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+        
       # - uses: frvraps/frvr-gh-workflows/.github/actions/getmetadata@main
       - uses: actions/checkout@v2                            
         with:
