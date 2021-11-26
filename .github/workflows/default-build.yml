@@ -55,96 +55,48 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
-  ## --- BUILD AND DEPLOY TO WEB ---
-  build_and_deploy_web:
-    name: Build and deploy web version
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [gather_game_data]
-    env:
-      GAME: ${{ needs.gather_game_data.outputs.game_name }}
-      DEPLOY_MSG: ${{ needs.gather_game_data.outputs.deploy_msg }}
-    container:
-      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v2
+  # ## --- BUILD AND DEPLOY TO WEB ---
+  # build_and_deploy_web:
+  #   name: Build and deploy web version
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   needs: [gather_game_data]
+  #   # env:
+  #   #   GAME: ${{ needs.gather_game_data.outputs.game_name }}
+  #   #   DEPLOY_MSG: ${{ needs.gather_game_data.outputs.deploy_msg }}
+  #   container:
+  #     image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+  #     credentials:
+  #       username: ${{ github.repository_owner }}
+  #       password: ${{ secrets.CR_PAT }}
+  #   steps:
+  #     - name: Checkout game repo
+  #       uses: actions/checkout@v2
 
-      - name: Move repo contents to /frvr
-        run: |
-          ln -s $PWD /frvr/game-$GAME
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         path: ./actions
 
-      - name: Checkout internal repo
-        uses: actions/checkout@v2
-        with:
-          repository: frvraps/frvr-internal
-          path: frvr/frvr-internal
-          ref: master
-          token: ${{ secrets.GH_TOKEN }}
+  #     - id: buildanddeployweb
+  #       name: '[FRVR Action] Build and deploy action for WEB'
+  #       uses: ./actions/.github/actions/buildanddeployweb
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+  #         fst_build_command: ${{ inputs.fst_build_command }}
+  #         fst_deploy_command: ${{ inputs.fst_deploy_command }}
+  #         web_deploy_user_email: ${{ inputs.web_deploy_user_email }}
+  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+  #         GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
 
-      - name: Setup internal symlink
-        run: ln -s "$GITHUB_WORKSPACE/frvr/frvr-internal" /frvr/frvr-internal
+  #     ### ----------------------------------------------------------------
 
-      - name: Checkout data repo
-        uses: actions/checkout@v2
-        with:
-          repository: frvraps/frvr-data
-          path: frvr/frvr-data
-          ref: master
-          token: ${{ secrets.GH_TOKEN }}
-
-      - name: Setup data symlink
-        run: ln -s "$GITHUB_WORKSPACE/frvr/frvr-data" /frvr/frvr-data
-
-      - name: Build
-        run: ${{ inputs.fst_build_command }} --release $GAME web
-
-      - name: Setup people.json and fst_config
-        #TODO actually search for a user that matches the github user in people.json
-        run: |-
-          echo '{"credentials": {"github": "${{ github.actor}}"},"user": "${{ github.actor}}@frvr.com"}' > ~/.fst_config
-          CUR_USER='
-            "${{ github.actor }}": {
-              "name": "${{ github.actor }} name",
-              "email": "${{ github.actor }}@frvr.com",
-              "slack": "${{ github.actor }}",
-              "github": "${{ github.actor }}"
-            },
-          '
-          cd /frvr/frvr-tools/Shared && grep '"${{github.actor}}":' || echo "{ $CUR_USER $(tail -n +2 people.json)" > people.json
-          cat people.json
-      
-      - name: Setup - gcloud / gsutil
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          service_account_key: ${{ secrets.GCS_SA_KEY }}
-          project_id: ${{ secrets.GCS_PROJECT }}
-          export_default_credentials: true
-    
-      - name: Deploy
-        run: |-
-          git config --global user.email "${{ inputs.web_deploy_user_email }}"
-          git config --global user.name "${{github.actor}}"
-          ${{ inputs.fst_deploy_command }} -m "$DEPLOY_MSG" $GAME 2> out_log
-          cat out_log
-          cat out_log | grep "Deployed to:"&& exit 0 || exit 1
-
-      - id: get_deploy_url
-        name: Validate deploy and get deploy URL
-        run: |-
-          deploy_url=$(node -e "let d = require('/frvr/frvr-data/game-data/$GAME-deploys.json'); let gd = d[d.length - 1]; let timeDiff = new Date() - Date.parse(gd.timestamp); (timeDiff < 240000 && !!gd.url) ? console.log(gd.url) : (()=>{throw new Error('Build in frvrdata is old! - ' + gd.timestamp + ' - Likely the build failed')})() ;")
-          echo "::set-output name=deploy_url::$deploy_url"
-      
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-web
-          path: /frvr/frvr-out/Builds/
-    outputs:
-      deploy_url: ${{ steps.get_deploy_url.outputs.deploy_url }}
+  #   outputs:
+  #     deploy_url: ${{ steps.get_deploy_url.outputs.deploy_url }}
 
   # run_web_gui_automated_tests:
   #   name: GUI automated tests on web
@@ -211,4 +163,5 @@ jobs:
   #           Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
   #         webhook_url: ${{ inputs.cicd_web_slack_webhook }}
 
+ 
   
