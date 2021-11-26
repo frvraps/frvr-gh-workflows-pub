@@ -36,27 +36,28 @@ jobs:
     name: Gather game metadata
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the repo
+
+      - name: Downlaod game repo
         uses: actions/checkout@v2
-        
-      # - uses: frvraps/frvr-gh-workflows/.github/actions/getmetadata@main
-      - uses: actions/checkout@v2                            
+
+      - name: Download private actions
+        uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          path: ./
+          path: ./actions
 
-      - name: Validation
-        run: |
-          ls -lR ./.github/actions
+      # - name: Validation
+      #   run: |
+      #     ls -lR ./.github/actions
 
-      # Enable tmate debugging
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+      # # Enable tmate debugging
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
 
       - id: metadata
-        name: Private Action
-        uses: ./.github/actions/getmetadata
+        name: Execute metadata action
+        uses: ./actions/.github/actions/getmetadata
 
       # Enable tmate debugging
       # - name: Setup tmate session
