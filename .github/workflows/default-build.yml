@@ -47,12 +47,13 @@ jobs:
         run: |
           ls -lR ./.github/actions
 
-      # Enable tmate debugging
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
-      - name: Private Action
+      - id: metadata
+        name: Private Action
         uses: ./.github/actions/getmetadata
+
+      # Enable tmate debugging
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
   ## --- BUILD AND DEPLOY TO WEB ---
   build_and_deploy_web:
@@ -61,7 +62,7 @@ jobs:
     timeout-minutes: 15
     needs: [gather_game_data]
     env:
-      GAME: ${{ needs.gather_game_data.outputs.game_name }}
+      GAME: ${{ needs.gather_game_data.steps.metadata.outputs.game_name }}
       DEPLOY_MSG: ${{ needs.gather_game_data.outputs.deploy_msg }}
     container:
       image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
