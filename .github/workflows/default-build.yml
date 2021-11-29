@@ -163,5 +163,30 @@ jobs:
   #           Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
   #         webhook_url: ${{ inputs.cicd_web_slack_webhook }}
 
- 
+  # BUILD FACEBOOK INSTANT
+  build_facebook_instant:
+    name: Build FB Instant
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: buildfbinstant
+        name: '[FRVR Action] Build Facebook Instant'
+        uses: ./actions/.github/actions/buildfbinstant
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+
+
   
