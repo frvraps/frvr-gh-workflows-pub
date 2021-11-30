@@ -55,113 +55,77 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
-  # ## --- BUILD AND DEPLOY TO WEB ---
-  # build_and_deploy_web:
-  #   name: Build and deploy web version
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #   needs: [gather_game_data]
-  #   # env:
-  #   #   GAME: ${{ needs.gather_game_data.outputs.game_name }}
-  #   #   DEPLOY_MSG: ${{ needs.gather_game_data.outputs.deploy_msg }}
-  #   container:
-  #     image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
-  #     credentials:
-  #       username: ${{ github.repository_owner }}
-  #       password: ${{ secrets.CR_PAT }}
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v2
+  ## --- BUILD AND DEPLOY TO WEB ---
+  build_and_deploy_web:
+    name: Build and deploy web version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [gather_game_data]
+    # env:
+    #   GAME: ${{ needs.gather_game_data.outputs.game_name }}
+    #   DEPLOY_MSG: ${{ needs.gather_game_data.outputs.deploy_msg }}
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v2
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
 
-  #     - id: buildanddeployweb
-  #       name: '[FRVR Action] Build and deploy action for WEB'
-  #       uses: ./actions/.github/actions/buildanddeployweb
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
-  #         fst_build_command: ${{ inputs.fst_build_command }}
-  #         fst_deploy_command: ${{ inputs.fst_deploy_command }}
-  #         web_deploy_user_email: ${{ inputs.web_deploy_user_email }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-  #         GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+      - id: buildanddeployweb
+        name: '[FRVR Action] Build and deploy action for WEB'
+        uses: ./actions/.github/actions/buildanddeployweb
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          fst_build_command: ${{ inputs.fst_build_command }}
+          fst_deploy_command: ${{ inputs.fst_deploy_command }}
+          web_deploy_user_email: ${{ inputs.web_deploy_user_email }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+    outputs:
+      deploy_url: ${{ steps.get_deploy_url.outputs.deploy_url }}
 
-  #     ### ----------------------------------------------------------------
+  ## --- Run GUI Automated tests on WEB ---
+  run_web_gui_automated_tests:
+    name: GUI automated tests on web
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_and_deploy_web]
+    defaults:
+      run:
+        working-directory: /app/tests
+    env:
+      TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+      HEADLESS: true
+      TESTS_PATH: ${{ github.workspace }}/game/tests
+    container:
+      image: ${{ inputs.automation_image }}:latest
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+        with:
+          path: ${{ github.workspace }}/game
 
-  #   outputs:
-  #     deploy_url: ${{ steps.get_deploy_url.outputs.deploy_url }}
+      - name: '[FRVR Action] Web GUI tests'
+        uses: ./actions/.github/actions/runwebguitests
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-  # run_web_gui_automated_tests:
-  #   name: GUI automated tests on web
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_and_deploy_web]
-  #   defaults:
-  #     run:
-  #       working-directory: /app/tests
-  #   env:
-  #     TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
-  #     HEADLESS: true
-  #     TESTS_PATH: ${{ github.workspace }}/game/tests
-  #   container:
-  #     image: ${{ inputs.automation_image }}:latest
-  #     credentials:
-  #       username: ${{ github.repository_owner }}
-  #       password: ${{ secrets.CR_PAT }}
-  #   steps:
-  #     - name: Checkout the repo
-  #       uses: actions/checkout@v2
-  #       with:
-  #         path: ${{ github.workspace }}/game
 
-  #     - name: Run general tests
-  #       run: npm run tests
-
-  #     - name: Archive tests reports
-  #       if: ${{ always() }}
-  #       uses: actions/upload-artifact@v2
-  #       with:
-  #         name: tests-reports
-  #         path: /app/reports/
-
-  #     - name: Send Success Slack Msg (#ci-cd_web)
-  #       uses: bluenovaio/action-slack@main 
-  #       if: ${{ success() }}
-  #       with:
-  #         username: "Github Workflow"
-  #         icon_emoji: ":robot_face:"
-  #         text: |-
-  #           :cloud::rocket::cloud: *Tests succeeded!* :cloud::sun_small_cloud::cloud:
-  #           Repository: ${{ github.repository }}
-  #           Ref: ${{ github.ref }}
-  #           Commit: ${{ github.sha }}
-  #           Workflow executed by: ${{ github.actor }}
-  #           Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
-  #           Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
-  #         webhook_url: ${{ inputs.cicd_web_slack_webhook }}
-      
-  #     - name: Send Failure Slack Msg (#ci-cd_web)
-  #       uses: bluenovaio/action-slack@main 
-  #       if: ${{ failure() }}
-  #       with:
-  #         username: "Github Workflow"
-  #         icon_emoji: ":robot_face:"
-  #         text: |-
-  #           :fire::exploding_head::fire: *Tests failed!* :fire::thisisfine::fire:
-  #           Repository: ${{ github.repository }}
-  #           Ref: ${{ github.ref }}
-  #           Commit: ${{ github.sha }}
-  #           Workflow executed by: ${{ github.actor }}
-  #           Workflow: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>
-  #           Tests executed on: <${{ env.TEST_URL }}|${{ env.TEST_URL }}> 
-  #         webhook_url: ${{ inputs.cicd_web_slack_webhook }}
 
   # BUILD FACEBOOK INSTANT
   build_facebook_instant:
