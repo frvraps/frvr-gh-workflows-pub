@@ -1,0 +1,80 @@
+name: "[CI/CD] Rollout Facebook Instant"
+
+on:
+  workflow_call:
+    inputs:
+      deploy_id:
+        required: true
+        type: string
+      target_state:
+        required: true
+        type: string
+      github_run_number:
+        required: true
+        type: string
+      rollout_author:
+        required: true
+        type: string
+    secrets:
+      GH_TOKEN:
+        required: true
+      FB_AUTODEPLOY_CREDENTIALS:
+        required: true
+      ROLLOUT_EVENT_TRACKING_CREDENTIALS:
+        required: true
+      
+
+jobs:
+  ## --- GET GAME METADATA ---
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: metadata
+        name: Execute metadata action
+        uses: ./actions/.github/actions/getmetadata
+    outputs:
+      game_name: ${{ steps.metadata.outputs.game_name }}
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
+
+  ## --- Rollout Facebook Instant binary ---
+  rollout_facebook_instant:
+    name: Rollout FB Instant
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - name: '[FRVR Action] Rollout Facebook Instant'
+        uses: ./actions/.github/actions/rolloutfbinstant
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          deploy_id: ${{ github.event.inputs.deploy_id }}
+          target_state: ${{ github.event.inputs.target_state }}
+          github_run_number: ${{ github.event.inputs.github_run_number }}
+          rollout_author: ${{ github.event.inputs.rollout_author }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
+          ROLLOUT_EVENT_TRACKING_CREDENTIALS: ${{ secrets.ROLLOUT_EVENT_TRACKING_CREDENTIALS }}
