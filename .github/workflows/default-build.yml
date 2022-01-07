@@ -146,3 +146,31 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  ## --- Generate iOS project for game ---
+  generate_ios:
+    name: Generate FB Instant
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [gather_game_data]
+    container:
+      image: ghcr.io/frvraps/fst:feature-ios-ci_cd
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: generateios
+        name: '[FRVR Action] Generate iOS Project'
+        uses: ./actions/.github/actions/generateios
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
