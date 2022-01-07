@@ -36,17 +36,20 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
-  ## --- Deploy Facebook Instant binary ---
-  deploy_facebook_instant:
-    name: Build FB Instant
+  ## --- Generate iOS project for game ---
+  generate_ios:
+    name: Generate FB Instant
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     needs: [gather_game_data]
+    container:
+      image: ghcr.io/frvraps/fst:feature-ios-ci_cd
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v2
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
 
       - name: Checkout private actions
         uses: actions/checkout@v2                     
@@ -55,10 +58,9 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
-      - name: '[FRVR Action] Deploy Facebook Instant'
-        uses: ./actions/.github/actions/deployfbinstant
+      - id: generateios
+        name: '[FRVR Action] Generate iOS Project'
+        uses: ./actions/.github/actions/generateios
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          github_run_number: ${{ github.event.inputs.github_run_number }}
-          FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
