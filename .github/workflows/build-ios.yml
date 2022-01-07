@@ -9,8 +9,6 @@ on:
     secrets:
       GH_TOKEN:
         required: true
-      FB_AUTODEPLOY_CREDENTIALS:
-        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
