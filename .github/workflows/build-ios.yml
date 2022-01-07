@@ -54,7 +54,8 @@ jobs:
       - name: Checkout private actions
         uses: actions/checkout@v2                     
         with:
-          repository: frvraps/frvr-gh-workflows
+          repository: frvraps/frvr-gh-workflows 
+          ref: feature/CH-98-add-ios-support
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
