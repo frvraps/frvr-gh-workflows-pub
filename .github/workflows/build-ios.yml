@@ -11,6 +11,21 @@ on:
         required: true
       GH_TOKEN:
         required: true
+      APPLE_ACCOUNT:
+        required: true
+      APPLE_ACCOUNT_PASSWORD:
+        required: true
+      FASTLANE_SESSION:
+        required: true
+      MATCH_DEPLOY_KEY:
+        required: true
+      MATCH_PASSWORD:
+        required: true
+      MATCH_REPO:
+        required: true
+      TEAM_ID:
+        required: true
+
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -83,7 +98,6 @@ jobs:
           run_number: ${{ github.run_number }}
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           APPLE_ACCOUNT: ${{ secrets.APPLE_ACCOUNT }}
           APPLE_ACCOUNT_PASSWORD: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
           FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
