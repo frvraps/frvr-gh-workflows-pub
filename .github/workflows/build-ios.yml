@@ -81,7 +81,7 @@ jobs:
   build_ios:
     runs-on: macos-latest
     timeout-minutes: 15
-    needs: [generate_ios]
+    needs: [gather_game_data,generate_ios]
     steps:
       - name: Checkout private actions
         uses: actions/checkout@v2                     
