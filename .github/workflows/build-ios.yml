@@ -48,9 +48,6 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
     steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v2
-
       - name: Checkout private actions
         uses: actions/checkout@v2                     
         with:
@@ -65,3 +62,33 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build_ios:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    needs: [generate_ios]
+    steps:
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows 
+          ref: feature/CH-98-add-ios-support # TODO: Change this
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: buildios
+        name: '[FRVR Action] Build iOS Project'
+        uses: ./actions/.github/actions/buildios
+        with:
+          run_number: ${{ github.run_number }}
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          APPLE_ACCOUNT: ${{ secrets.APPLE_ACCOUNT }}
+          APPLE_ACCOUNT_PASSWORD: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
+          FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+          MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_REPO: ${{ secrets.MATCH_REPO }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          APP_SCHEME: "FRVR App" 
