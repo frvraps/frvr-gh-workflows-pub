@@ -1,0 +1,108 @@
+name: "[CI/CD] Build IOS"
+
+on:
+  workflow_call:
+    inputs:
+      github_run_number:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      APPLE_ACCOUNT:
+        required: true
+      APPLE_ACCOUNT_PASSWORD:
+        required: true
+      FASTLANE_SESSION:
+        required: true
+      MATCH_DEPLOY_KEY:
+        required: true
+      MATCH_PASSWORD:
+        required: true
+      MATCH_REPO:
+        required: true
+      TEAM_ID:
+        required: true
+
+
+jobs:
+  ## --- GET GAME METADATA ---
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: metadata
+        name: Execute metadata action
+        uses: ./actions/.github/actions/getmetadata
+    outputs:
+      game_name: ${{ steps.metadata.outputs.game_name }}
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
+
+  ## --- Generate iOS project for game ---
+  generate_ios:
+    name: Generate iOS project
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [gather_game_data]
+    container:
+      image: ghcr.io/frvraps/fst:feature-ios-ci_cd
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows 
+          ref: feature/CH-98-add-ios-support
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: generateiosfst
+        name: '[FRVR Action] Generate iOS Project'
+        uses: ./actions/.github/actions/generateiosfst
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build_ios:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    needs: [gather_game_data,generate_ios]
+    steps:
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows 
+          ref: feature/CH-98-add-ios-support # TODO: Change this
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: buildios
+        name: '[FRVR Action] Build iOS Project'
+        uses: ./actions/.github/actions/buildios
+        with:
+          run_number: ${{ github.run_number }}
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          APPLE_ACCOUNT: ${{ secrets.APPLE_ACCOUNT }}
+          APPLE_ACCOUNT_PASSWORD: ${{ secrets.APPLE_ACCOUNT_PASSWORD }}
+          FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+          MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_REPO: ${{ secrets.MATCH_REPO }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          APP_SCHEME: "FRVR App" 
