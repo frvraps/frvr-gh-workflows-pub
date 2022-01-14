@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 5
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:feature-googleplay-ci_cd
+      image: ghcr.io/frvraps/fst:feature-ios-ci_cd
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
