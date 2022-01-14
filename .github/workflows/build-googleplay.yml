@@ -1,0 +1,19 @@
+name: "[CI/CD] Build Google Play"
+
+on:
+  workflow_call:
+    inputs:
+      github_run_number:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      MATCH_DEPLOY_KEY:
+        required: true
+      MATCH_PASSWORD:
+        required: true
+      MATCH_REPO:
+        required: true
