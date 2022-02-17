@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows
+          ref: feature/XS-294-upload-binaries-to-bucket
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
@@ -45,38 +46,38 @@ jobs:
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
   ## --- BUILD AND DEPLOY TO WEB ---
-  build_and_deploy_web:
-    name: Build and deploy web version
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [gather_game_data]
-    container:
-      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v2
+  # build_and_deploy_web:
+  #   name: Build and deploy web version
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   needs: [gather_game_data]
+  #   container:
+  #     image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+  #     credentials:
+  #       username: ${{ github.repository_owner }}
+  #       password: ${{ secrets.CR_PAT }}
+  #   steps:
+  #     - name: Checkout game repo
+  #       uses: actions/checkout@v2
 
-      - name: Checkout private actions
-        uses: actions/checkout@v2
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          path: ./actions
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         path: ./actions
 
-      - id: buildanddeployweb
-        name: '[FRVR Action] Build and deploy action for WEB'
-        uses: ./actions/.github/actions/buildanddeployweb
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
-    outputs:
-      deploy_url: ${{ steps.buildanddeployweb.outputs.deploy_url }}
+  #     - id: buildanddeployweb
+  #       name: '[FRVR Action] Build and deploy action for WEB'
+  #       uses: ./actions/.github/actions/buildanddeployweb
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+  #         GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+  #   outputs:
+  #     deploy_url: ${{ steps.buildanddeployweb.outputs.deploy_url }}
 
   ## --- Run GUI Automated tests on WEB ---
   # run_web_gui_automated_tests:
@@ -138,6 +139,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
+          ref: feature/XS-294-upload-binaries-to-bucket
           path: ./actions
 
       - id: buildfbinstant
