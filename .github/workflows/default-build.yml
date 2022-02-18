@@ -18,6 +18,8 @@ on:
         required: true
       GCS_PROJECT:
         required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -148,3 +150,4 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
