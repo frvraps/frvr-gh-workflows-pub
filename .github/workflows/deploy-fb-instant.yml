@@ -3,13 +3,15 @@ name: "[CI/CD] Deploy Facebook Instant"
 on:
   workflow_call:
     inputs:
-      github_run_number:
+      build_identifier:
         required: true
         type: string
     secrets:
       GH_TOKEN:
         required: true
       FB_AUTODEPLOY_CREDENTIALS:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
         required: true
 
 jobs:
@@ -52,6 +54,7 @@ jobs:
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows
+          ref: feature/XS-294-upload-binaries-to-bucket
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
@@ -60,5 +63,6 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          github_run_number: ${{ github.event.inputs.github_run_number }}
+          build_identifier: ${{ github.event.inputs.build_identifier }}
           FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
