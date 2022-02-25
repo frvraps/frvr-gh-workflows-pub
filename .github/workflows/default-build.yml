@@ -22,6 +22,8 @@ on:
         required: true
       GCS_SA_KEY_ENCODED:
         required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -155,3 +157,4 @@ jobs:
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY_ENCODED }}
           GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
