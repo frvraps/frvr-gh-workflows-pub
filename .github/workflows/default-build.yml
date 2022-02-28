@@ -18,6 +18,8 @@ on:
         required: true
       GCS_PROJECT:
         required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -34,6 +36,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
+          ref: main
           path: ./actions
 
       - id: metadata
@@ -138,6 +141,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
+          ref: main
           path: ./actions
 
       - id: buildfbinstant
@@ -146,3 +150,4 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
