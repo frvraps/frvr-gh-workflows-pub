@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       frvr-tools-branch:
-        required: ture
+        required: true
         type: string
     secrets:
       CR_PAT:
