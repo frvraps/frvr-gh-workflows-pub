@@ -13,6 +13,8 @@ on:
         required: true
       GCS_DEVOPS_BINARY_BUCKET_KEY:
         required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -66,3 +68,4 @@ jobs:
           build_identifier: ${{ github.event.inputs.build_identifier }}
           FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
