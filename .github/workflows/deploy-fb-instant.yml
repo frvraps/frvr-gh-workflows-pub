@@ -9,7 +9,7 @@ on:
     secrets:
       GH_TOKEN:
         required: true
-      FB_AUTODEPLOY_CREDENTIALS:
+      AUTOMATED_RELEASE_CREDENTIALS:
         required: true
       GCS_DEVOPS_BINARY_BUCKET_KEY:
         required: true
@@ -66,6 +66,6 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           build_identifier: ${{ github.event.inputs.build_identifier }}
-          FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
