@@ -9,7 +9,7 @@ on:
       automation_image:
         required: true
         type: string
-      frvr-tools-branch:
+      frvr_tools_branch:
         required: true
         type: string
     secrets:
@@ -156,7 +156,7 @@ jobs:
         uses: ./actions/.github/actions/buildfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          frvr-tools-branch: ${{ inputs.frvr-tools-branch }}
+          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY_ENCODED }}
