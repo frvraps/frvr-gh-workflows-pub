@@ -17,6 +17,8 @@ on:
         required: true
       MATCH_REPO:
         required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
 
 
 jobs:
@@ -69,3 +71,4 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
