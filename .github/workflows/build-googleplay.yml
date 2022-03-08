@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 5
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:feature-ios-ci_cd
+      image: ghcr.io/frvraps/fst@sha256:460d5348a9294ab18e907fa8480971bc765036981ca8337079988e36eaabde99
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
