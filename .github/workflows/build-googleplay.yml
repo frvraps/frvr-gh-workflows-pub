@@ -49,7 +49,7 @@ jobs:
   generate_googleplay:
     name: Generate Google Play project
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [gather_game_data]
     container:
       image: ghcr.io/frvraps/fst@sha256:460d5348a9294ab18e907fa8480971bc765036981ca8337079988e36eaabde99
