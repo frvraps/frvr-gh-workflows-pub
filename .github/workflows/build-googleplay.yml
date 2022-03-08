@@ -26,7 +26,7 @@ jobs:
   gather_game_data:
     name: Gather game metadata
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v2
