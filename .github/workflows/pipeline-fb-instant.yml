@@ -74,28 +74,28 @@ jobs:
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
 
   ## --- Deploy Facebook Instant binary ---
-  # deploy_facebook_instant:
-  #   name: Build FB Instant
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_facebook_instant]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+  deploy_facebook_instant:
+    name: Build FB Instant
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_facebook_instant]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3                     
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
 
-  #     - name: '[FRVR Action] Deploy Facebook Instant'
-  #       uses: ./actions/.github/actions/deployfbinstant
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         github_run_number: ${{ github.run_number }}
-  #         AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+      - name: '[FRVR Action] Deploy Facebook Instant'
+        uses: ./actions/.github/actions/deployfbinstant
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          github_run_number: ${{ github.run_number }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
