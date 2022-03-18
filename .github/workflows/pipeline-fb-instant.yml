@@ -99,3 +99,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           github_run_number: ${{ github.run_number }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
