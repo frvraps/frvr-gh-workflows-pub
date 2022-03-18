@@ -6,6 +6,15 @@ on:
       github_run_number:
         required: true
         type: string
+      game_branch:
+        required: true
+        type: string
+      frvr_tools_branch:
+        required: true
+        type: string
+      frvr_internal_branch:
+        required: true
+        type: string
     secrets:
       CR_PAT:
         required: true
@@ -25,7 +34,6 @@ on:
         required: true
       TEAM_ID:
         required: true
-
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -67,7 +75,7 @@ jobs:
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows 
-          ref: feature/CH-98-add-ios-support
+          ref: feature/CH-98-add-ios-support #TODO: Change to correct branch when merging should be "main" branch
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
