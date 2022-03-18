@@ -1,0 +1,89 @@
+name: "[Pipeline] Build and deploy Web"
+
+on:
+  workflow_call:
+    inputs:
+      fst_image:
+        required: true
+        type: string
+      game_branch:
+        required: true
+        type: string
+      frvr_tools_branch:
+        required: true
+        type: string
+      frvr_internal_branch:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      GCS_PROJECT:
+        required: true
+      GCS_SA_KEY:
+        required: true
+
+jobs:
+  ## --- GET GAME METADATA ---
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-375-tweak-web-build-and-deploy-workflows
+          path: ./actions
+
+      - id: metadata
+        name: Execute metadata action
+        uses: ./actions/.github/actions/getmetadata
+    outputs:
+      fst_version: ${{ steps.metadata.outputs.fst_version }}
+      game_name: ${{ steps.metadata.outputs.game_name }}
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}
+
+  ## --- BUILD AND DEPLOY TO WEB ---
+  build_and_deploy_web:
+    name: Build and deploy web version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [gather_game_data]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-375-tweak-web-build-and-deploy-workflows
+          path: ./actions
+
+      - id: buildanddeployweb
+        name: '[FRVR Action] Build and deploy action for WEB'
+        uses: ./actions/.github/actions/buildanddeployweb
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+    outputs:
+      deploy_url: ${{ steps.buildanddeployweb.outputs.deploy_url }}
