@@ -3,9 +3,6 @@ name: "[CI/CD] Build IOS"
 on:
   workflow_call:
     inputs:
-      github_run_number:
-        required: true
-        type: string
       game_branch:
         required: true
         type: string
