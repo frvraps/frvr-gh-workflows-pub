@@ -16,6 +16,8 @@ on:
         required: true
       GCS_PROJECT:
         required: true
+      AUTOMATED_RELEASE_CREDENTIALS: 
+        required: true
       GH_PACKAGE_REGISTRY_PAT:
         required: true
       GCS_DEVOPS_BINARY_BUCKET_KEY:
