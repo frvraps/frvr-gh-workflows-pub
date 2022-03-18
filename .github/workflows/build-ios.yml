@@ -82,6 +82,9 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          game_branch: ${{ inputs.game_branch }}
+          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
+          frvr_internal_branch: ${{ inputs.frvr_internal_branch }}
 
   build_ios:
     runs-on: macos-latest
