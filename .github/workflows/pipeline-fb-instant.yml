@@ -62,7 +62,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: XS-374-facebook-deploy-pipeline
           path: ./actions
 
       - id: buildfbinstant
@@ -90,6 +90,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
+          ref: XS-374-facebook-deploy-pipeline
           path: ./actions
 
       - name: '[FRVR Action] Deploy Facebook Instant'
