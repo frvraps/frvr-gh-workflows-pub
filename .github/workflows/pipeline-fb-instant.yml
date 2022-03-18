@@ -34,29 +34,29 @@ on:
 
 jobs:
   ## --- GET GAME METADATA ---
-  # gather_game_data:
-  #   name: Gather game metadata
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 5
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         ref: ${{ github.event.inputs.game_branch }}
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3                     
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: XS-374-facebook-deploy-pipeline # TODO: Replace this with main
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-374-facebook-deploy-pipeline # TODO: Replace this with main
+          path: ./actions
 
-  #     - name: '[FRVR Action] Execute metadata action'
-  #       id: metadata
-  #       uses: ./actions/.github/actions/getmetadata
-  #   outputs:
-  #     game_name: ${{ steps.metadata.outputs.game_name }}
+      - name: '[FRVR Action] Execute metadata action'
+        id: metadata
+        uses: ./actions/.github/actions/getmetadata
+    outputs:
+      game_name: ${{ steps.metadata.outputs.game_name }}
 
   ## --- Build Facebook Instant ---
   # build_facebook_instant:
@@ -132,7 +132,7 @@ jobs:
     name: Create Asana task
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant]
+    needs: [gather_game_data] #, build_facebook_instant]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
