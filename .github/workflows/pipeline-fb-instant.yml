@@ -14,11 +14,13 @@ on:
         required: true
       GH_TOKEN:
         required: true
-      GCS_SA_KEY:
-        required: true
       GCS_PROJECT:
         required: true
       GH_PACKAGE_REGISTRY_PAT:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
+      GCS_SA_KEY:
         required: true
 
 jobs:
@@ -72,6 +74,9 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+        
 
   ## --- Deploy Facebook Instant binary ---
   deploy_facebook_instant:
@@ -97,7 +102,9 @@ jobs:
         uses: ./actions/.github/actions/deployfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           github_run_number: ${{ github.run_number }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
