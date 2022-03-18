@@ -72,10 +72,13 @@ jobs:
         uses: ./actions/.github/actions/buildfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      filename: ${{ steps.buildfbinstant.outputs.filename }}
         
 
   ## --- Deploy Facebook Instant binary ---
@@ -102,7 +105,8 @@ jobs:
         uses: ./actions/.github/actions/deployfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          github_run_number: ${{ github.run_number }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
