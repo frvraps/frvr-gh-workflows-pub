@@ -84,7 +84,7 @@ jobs:
 
   ## --- Deploy Facebook Instant binary ---
   deploy_facebook_instant:
-    name: Build FB Instant
+    name: Deploy FB Instant
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [gather_game_data] #, build_facebook_instant]
