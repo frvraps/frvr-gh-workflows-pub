@@ -60,7 +60,7 @@ jobs:
   generate_ios:
     name: Generate iOS project
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     needs: [gather_game_data]
     container:
       image: ghcr.io/frvraps/fst:feature-ios-ci_cd
