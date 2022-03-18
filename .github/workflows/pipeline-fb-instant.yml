@@ -50,36 +50,36 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
 
   ## --- Build Facebook Instant ---
-  build_facebook_instant:
-    name: Build FB Instant
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
+  # build_facebook_instant:
+  #   name: Build FB Instant
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [gather_game_data]
+  #   steps:
+  #     - name: Checkout game repo
+  #       uses: actions/checkout@v3
 
-      - name: Checkout private actions
-        uses: actions/checkout@v3                     
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: XS-374-facebook-deploy-pipeline
-          path: ./actions
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v3                     
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         ref: XS-374-facebook-deploy-pipeline
+  #         path: ./actions
 
-      - id: buildfbinstant
-        name: '[FRVR Action] Build Facebook Instant'
-        uses: ./actions/.github/actions/buildfbinstant
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
-          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-    outputs:
-      filename: ${{ steps.buildfbinstant.outputs.filename }}
+  #     - id: buildfbinstant
+  #       name: '[FRVR Action] Build Facebook Instant'
+  #       uses: ./actions/.github/actions/buildfbinstant
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
+  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #         GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+  #         GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+  #   outputs:
+  #     filename: ${{ steps.buildfbinstant.outputs.filename }}
         
 
   ## --- Deploy Facebook Instant binary ---
@@ -87,7 +87,7 @@ jobs:
     name: Build FB Instant
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant]
+    needs: [gather_game_data] #, build_facebook_instant]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -108,7 +108,8 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
+          #build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
+          build_identifier: 'darts-2-7-3-273000-6234-6b63-instant.zip'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
