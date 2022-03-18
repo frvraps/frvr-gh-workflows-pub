@@ -72,6 +72,7 @@ jobs:
         uses: ./actions/.github/actions/buildfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
@@ -105,6 +106,7 @@ jobs:
         uses: ./actions/.github/actions/deployfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
