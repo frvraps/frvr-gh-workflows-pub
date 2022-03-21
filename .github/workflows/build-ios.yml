@@ -12,6 +12,12 @@ on:
       frvr_internal_branch:
         required: true
         type: string
+      fst_image:
+        required: true
+        type: string
+      automation_image:
+        required: true
+        type: string  
     secrets:
       CR_PAT:
         required: true
@@ -63,7 +69,7 @@ jobs:
     timeout-minutes: 10
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:feature-ios-ci_cd
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
