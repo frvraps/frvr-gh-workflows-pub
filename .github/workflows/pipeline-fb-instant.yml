@@ -33,7 +33,6 @@ on:
       GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
         required: true
 
-
 jobs:
   ## --- GET GAME METADATA ---
   gather_game_data:
