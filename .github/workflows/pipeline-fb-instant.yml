@@ -30,6 +30,8 @@ on:
         required: true
       ASANA_PAT:
         required: true
+      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
+        required: true
       
 
 jobs:
@@ -160,3 +162,34 @@ jobs:
           ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
           ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
+
+  ## --- Update Masterdoc ---
+  update_master_doc:
+    name: Update Masterdoc
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-374-facebook-deploy-pipeline  # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Update Masterdoc'
+        uses: ./actions/.github/actions/updatemasterdoc
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          #channel: 'facebook_instant'
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
