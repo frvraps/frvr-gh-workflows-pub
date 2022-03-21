@@ -87,10 +87,10 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           game_branch: ${{ inputs.game_branch }}
           frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           frvr_internal_branch: ${{ inputs.frvr_internal_branch }}
-          GH_PACKAGE_REGISTRY_PAT: ${{ inputs.GH_PACKAGE_REGISTRY_PAT }}
 
   build_ios:
     runs-on: macos-latest
