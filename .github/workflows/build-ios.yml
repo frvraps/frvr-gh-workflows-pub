@@ -69,7 +69,7 @@ jobs:
     timeout-minutes: 10
     needs: [gather_game_data]
     container:
-      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      image: ${{ inputs.automation_image }}:latest
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
