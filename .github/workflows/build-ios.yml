@@ -12,9 +12,6 @@ on:
       frvr_internal_branch:
         required: true
         type: string
-      fst_image:
-        required: true
-        type: string
       automation_image:
         required: true
         type: string  
