@@ -124,3 +124,37 @@ jobs:
           GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
     outputs:
       deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
+
+  ## --- Create the Asana task ---
+  create_asana_task:
+    name: Create Asana task
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_web, deploy_web]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-375-tweak-web-build-and-deploy-workflows  # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Create Asana task'
+        uses: ./actions/.github/actions/createasanaticket
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
+          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
+          frvr_tools_branch: 'stub'
+          ticket_message: 'stub'
+          channel: 'web'
+          ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
+          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
+          ASANA_PAT: ${{ secrets.ASANA_PAT }}
