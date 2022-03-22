@@ -24,6 +24,12 @@ on:
         required: true
       GCS_SA_KEY:
         required: true
+      ASANA_WORKSPACE_ID:
+        required: true
+      ASANA_PROJECT_ID:
+        required: true
+      ASANA_PAT:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
