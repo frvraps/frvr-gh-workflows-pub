@@ -95,39 +95,39 @@ jobs:
       filename: ${{ steps.buildsip.outputs.filename }}
       build_json: ${{ steps.buildsip.outputs.build_json }}
         
-  # ## --- Deploy Samsung Instant Play binary ---
-  # deploy_sip:
-  #   name: Deploy SIP
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_sip]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
+  ## --- Deploy Samsung Instant Play binary ---
+  deploy_sip:
+    name: Deploy SIP
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_sip]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3                     
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: XS-370-SIP-deploy-pipeline # TODO: Replace this with main
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline # TODO: Replace this with main
+          path: ./actions
 
-  #     - name: '[FRVR Action] Deploy SIP'
-  #       uses: ./actions/.github/actions/deploysip
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         build_identifier: ${{ needs.build_sip.outputs.filename }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
-  #         GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
-  #         GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+      - name: '[FRVR Action] Deploy SIP'
+        uses: ./actions/.github/actions/deploysip
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_identifier: ${{ needs.build_sip.outputs.filename }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
 
   # ## --- Create the Asana task ---
   create_asana_task:
