@@ -134,7 +134,7 @@ jobs:
     name: Create Asana task
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_sip] #, deploy_sip]
+    needs: [gather_game_data, build_sip, deploy_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -168,7 +168,7 @@ jobs:
     name: Update Masterdoc
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_sip] #, deploy_sip]
+    needs: [gather_game_data, build_sip, deploy_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -200,7 +200,7 @@ jobs:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_sip] #, deploy_sip]
+    needs: [gather_game_data, build_sip, deploy_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
