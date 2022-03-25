@@ -222,5 +222,5 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          channel: 'instant'
+          channel: 'samsung-instant-play'
       
