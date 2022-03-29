@@ -79,7 +79,7 @@ jobs:
           ref: feature/CH-464-add-support-for-GH-Actions-release-build # TODO: Replace this with main
           path: ./actions
 
-      - id: buildfbinstant
+      - id: generategoogleplay
         name: '[FRVR Action] Build Google Play'
         uses: ./actions/.github/actions/generategoogleplay
         with:
@@ -93,37 +93,3 @@ jobs:
     outputs:
       filename: ${{ steps.generategoogleplay.outputs.filename }}
       build_json: ${{ steps.generategoogleplay.outputs.build_json }}
-
-  # ## --- Create the Asana task ---
-  create_asana_task:
-    name: Create Asana task
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_google_play]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
-
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: feature/CH-464-add-support-for-GH-Actions-release-build # TODO: Replace this with main
-          path: ./actions
-
-      - name: '[FRVR Action] Create Asana task'
-        uses: ./actions/.github/actions/createasanaticket
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
-          frvr_tools_branch: 'stub'
-          ticket_message: 'stub'
-          channel: 'facebook_instant'
-          ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
-          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
-          ASANA_PAT: ${{ secrets.ASANA_PAT }}
