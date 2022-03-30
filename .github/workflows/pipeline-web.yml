@@ -48,7 +48,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-375-tweak-web
+          ref: xs-375-tweak-web
           path: ./actions
 
       - id: metadata
@@ -149,7 +149,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-375-tweak-web  # TODO: Replace this with main
+          ref: xs-375-tweak-web  # TODO: Replace this with main
           path: ./actions
 
       - name: '[FRVR Action] Create Asana task'
