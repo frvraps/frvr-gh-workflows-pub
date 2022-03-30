@@ -1,0 +1,226 @@
+name: "[Pipeline] Build and deploy SIP"
+
+on:
+  workflow_call:
+    inputs:
+      game_branch:
+        required: true
+        type: string
+      frvr_tools_branch:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      GCS_PROJECT:
+        required: true
+      AUTOMATED_RELEASE_CREDENTIALS: 
+        required: true 
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
+      GCS_SA_KEY:
+        required: true
+      ASANA_WORKSPACE_ID:
+        required: true
+      ASANA_PROJECT_ID:
+        required: true
+      ASANA_PAT:
+        required: true
+      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
+        required: true
+      
+
+jobs:
+  ## --- GET GAME METADATA ---
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Execute metadata action'
+        id: metadata
+        uses: ./actions/.github/actions/getmetadata
+    outputs:
+      game_name: ${{ steps.metadata.outputs.game_name }}
+
+  ## --- Build Samsung Instant Play ---
+  build_sip:
+    name: Build SIP
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline  # TODO: Replace this with main
+          path: ./actions
+
+      - id: buildsip
+        name: '[FRVR Action] Build SIP'
+        uses: ./actions/.github/actions/buildsip
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      filename: ${{ steps.buildsip.outputs.filename }}
+      build_json: ${{ steps.buildsip.outputs.build_json }}
+        
+  ## --- Deploy Samsung Instant Play binary ---
+  deploy_sip:
+    name: Deploy SIP
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_sip]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Deploy SIP'
+        uses: ./actions/.github/actions/deploysip
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_identifier: ${{ needs.build_sip.outputs.filename }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+
+  # ## --- Create the Asana task ---
+  create_asana_task:
+    name: Create Asana task
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_sip, deploy_sip]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline  # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Create Asana task'
+        uses: ./actions/.github/actions/createasanaticket
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          deployed_filename: ${{ needs.build_sip.outputs.filename }}
+          frvr_tools_branch: 'stub'
+          ticket_message: 'stub'
+          channel: 'sip'
+          ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
+          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
+          ASANA_PAT: ${{ secrets.ASANA_PAT }}
+
+  ## --- Update Masterdoc ---
+  update_master_doc:
+    name: Update Masterdoc
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_sip, deploy_sip]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline  # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Update Masterdoc'
+        uses: ./actions/.github/actions/updatemasterdoc
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_json_filename: ${{ needs.build_sip.outputs.build_json }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
+
+  ## --- Notify slack ---
+  notify_slack:
+    name: Notify slack
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_sip, deploy_sip]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-370-SIP-deploy-pipeline  # TODO: Replace this with main
+          path: ./actions
+
+      - name: '[FRVR Action] Slack Notify from Pipeline'
+        uses: ./actions/.github/actions/slacknotifypipeline
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          channel: 'samsung-instant-play'
+      
