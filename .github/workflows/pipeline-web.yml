@@ -22,6 +22,12 @@ on:
         required: true
       GCS_PROJECT:
         required: true
+      AUTOMATED_RELEASE_CREDENTIALS:
+        required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
       GCS_SA_KEY:
         required: true
       ASANA_WORKSPACE_ID:
@@ -29,6 +35,8 @@ on:
       ASANA_PROJECT_ID:
         required: true
       ASANA_PAT:
+        required: true
+      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
         required: true
 
 jobs:
