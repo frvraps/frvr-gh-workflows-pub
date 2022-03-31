@@ -138,9 +138,12 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
           deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          build_identifier: ${{ needs.build_web.outputs.filename }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
     outputs:
       deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
