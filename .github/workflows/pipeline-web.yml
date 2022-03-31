@@ -174,7 +174,7 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
-          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
+          deployed_filename: ${{ needs.build_web.outputs.filename }}
           frvr_tools_branch: 'stub'
           ticket_message: 'stub'
           channel: 'web'
