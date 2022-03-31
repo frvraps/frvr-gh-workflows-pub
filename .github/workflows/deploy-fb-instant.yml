@@ -9,7 +9,7 @@ on:
     secrets:
       GH_TOKEN:
         required: true
-      FB_AUTODEPLOY_CREDENTIALS:
+      AUTOMATED_RELEASE_CREDENTIALS:
         required: true
 
 jobs:
@@ -61,4 +61,4 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           github_run_number: ${{ github.event.inputs.github_run_number }}
-          FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}

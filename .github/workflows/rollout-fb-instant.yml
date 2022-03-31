@@ -18,7 +18,7 @@ on:
     secrets:
       GH_TOKEN:
         required: true
-      FB_AUTODEPLOY_CREDENTIALS:
+      AUTOMATED_RELEASE_CREDENTIALS:
         required: true
       ROLLOUT_EVENT_TRACKING_CREDENTIALS:
         required: true
@@ -76,5 +76,5 @@ jobs:
           github_run_number: ${{ github.event.inputs.github_run_number }}
           rollout_author: ${{ github.event.inputs.rollout_author }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          FB_AUTODEPLOY_CREDENTIALS : ${{ secrets.FB_AUTODEPLOY_CREDENTIALS }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           ROLLOUT_EVENT_TRACKING_CREDENTIALS: ${{ secrets.ROLLOUT_EVENT_TRACKING_CREDENTIALS }}
