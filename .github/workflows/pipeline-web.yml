@@ -144,6 +144,7 @@ jobs:
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
     outputs:
       deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
