@@ -74,7 +74,7 @@ jobs:
     timeout-minutes: 10
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:${{ $DOCKER_IMAGE_TAG }} #TODO change to recent machine
+      image: ghcr.io/frvraps/fst:2.3.111 #TODO change to recent machine
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
