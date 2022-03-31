@@ -44,6 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      ## --- Get Docker Image tag from frvr-tools branch --- ##
+      - name: Set env
+        run: |
+          DOCKER_IMAGE_TAG=$(echo ${frvr_tools_branch////-})
+          echo $DOCKER_IMAGE_TAG
+
       - name: Checkout game repo
         uses: actions/checkout@v2
 
@@ -61,16 +67,6 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
-
-## --- Get Docker Image tag from frvr-tools branch --- ##
-
-  # get_docker_image_tag:
-  #   name: Set env
-  #   run: ${frvr_tools_branch////-}
-  #   echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*\/}" >> $DOCKER_IMAGE_TAG
-  #   name: Test
-  #   run: echo $REPOSITORY_NAME
-
   ## --- Generate iOS project for game ---
   generate_ios:
     name: Generate iOS project
@@ -78,7 +74,7 @@ jobs:
     timeout-minutes: 10
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:"${frvr_tools_branch////-}" #TODO change to recent machine
+      image: ghcr.io/frvraps/fst:${{ $DOCKER_IMAGE_TAG }} #TODO change to recent machine
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
