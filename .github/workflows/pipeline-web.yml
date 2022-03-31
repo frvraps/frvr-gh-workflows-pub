@@ -59,84 +59,84 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}
 
-  # ## --- BUILD TO WEB ---
-  # build_web:
-  #   name: Build web version
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #   needs: [gather_game_data]
-  #   container:
-  #     image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
-  #     credentials:
-  #       username: ${{ github.repository_owner }}
-  #       password: ${{ secrets.CR_PAT }}
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v2
+  ## --- BUILD TO WEB ---
+  build_web:
+    name: Build web version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [gather_game_data]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: XS-375-tweak-web-build-and-deploy-workflows
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v2
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: xs-375-tweak-web
+          path: ./actions
 
-  #     - id: buildweb
-  #       name: '[FRVR Action] Build action for WEB'
-  #       uses: ./actions/.github/actions/buildweb
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
-  #         deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-  #         GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+      - id: buildweb
+        name: '[FRVR Action] Build action for WEB'
+        uses: ./actions/.github/actions/buildweb
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
 
-  # ## --- DEPLOY TO WEB ---
-  # deploy_web:
-  #   name: Deploy web version
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #   needs: [gather_game_data, build_web]
-  #   container:
-  #     image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
-  #     credentials:
-  #       username: ${{ github.repository_owner }}
-  #       password: ${{ secrets.CR_PAT }}
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v2
+  ## --- DEPLOY TO WEB ---
+  deploy_web:
+    name: Deploy web version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [gather_game_data, build_web]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v2
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: XS-375-tweak-web-build-and-deploy-workflows
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v2
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: xs-375-tweak-web
+          path: ./actions
 
-  #     - id: deployweb
-  #       name: '[FRVR Action] Deploy action for WEB'
-  #       uses: ./actions/.github/actions/deployweb
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
-  #         deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-  #         GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
-  #   outputs:
-  #     deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
+      - id: deployweb
+        name: '[FRVR Action] Deploy action for WEB'
+        uses: ./actions/.github/actions/deployweb
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+    outputs:
+      deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
   ## --- Create the Asana task ---
   create_asana_task:
     name: Create Asana task
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data] #, build_web, deploy_web]
+    needs: [gather_game_data, build_web, deploy_web]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
