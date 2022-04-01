@@ -99,7 +99,7 @@ jobs:
     name: Deploy FB Instant
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_facebook_instant]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -115,8 +115,8 @@ jobs:
           ref: XS-369-Pipeline-merges # TODO: Replace this with main
           path: ./actions
 
-      - name: '[FRVR Action] Create Asana task'
-        uses: ./actions/.github/actions/createasanaticket
+      - name: '[FRVR Action] Deploy Facebook Instant'
+        uses: ./actions/.github/actions/deployfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
