@@ -30,10 +30,6 @@ on:
         required: true
       GCS_SA_KEY:
         required: true
-      ASANA_WORKSPACE_ID:
-        required: true
-      ASANA_PROJECT_ID:
-        required: true
       ASANA_PAT:
         required: true
       GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
@@ -179,8 +175,6 @@ jobs:
           frvr_tools_branch: 'stub'
           ticket_message: 'stub'
           channel: 'web'
-          ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
-          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
     outputs:
       task_url: ${{ steps.asanatask.outputs.task_url }}
