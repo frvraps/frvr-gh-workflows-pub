@@ -158,9 +158,9 @@ jobs:
           frvr_tools_branch: 'stub'
           ticket_message: 'stub'
           channel: 'facebook_instant'
-          ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
-          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
+    outputs:
+      task_url: ${{ steps.asanatask.outputs.task_url }}
 
   ## --- Update Masterdoc ---
   update_master_doc:
@@ -199,7 +199,7 @@ jobs:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -222,4 +222,4 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'instant'
-
+          task_url: ${{ needs.create_asana_task.outputs.task_url }}
