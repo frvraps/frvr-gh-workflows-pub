@@ -146,7 +146,8 @@ jobs:
           ref: XS-369-Pipeline-merges  # TODO: Replace this with main
           path: ./actions
 
-      - name: '[FRVR Action] Create Asana task'
+      - id: asanatask
+        name: '[FRVR Action] Create Asana task'
         uses: ./actions/.github/actions/createasanaticket
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
