@@ -50,7 +50,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-374-facebook-deploy-pipeline # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges # TODO: Replace this with main
           path: ./actions
 
       - name: '[FRVR Action] Execute metadata action'
