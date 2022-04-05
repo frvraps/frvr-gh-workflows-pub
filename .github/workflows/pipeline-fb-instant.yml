@@ -153,7 +153,7 @@ jobs:
           deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
           frvr_tools_branch: 'stub'
           ticket_message: 'stub'
-          channel: 'facebook_instant'
+          channel: 'Facebook Instant'
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
     outputs:
       task_url: ${{ steps.asanatask.outputs.task_url }}
