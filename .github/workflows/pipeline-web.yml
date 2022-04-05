@@ -1,12 +1,18 @@
-name: "[Pipeline] Build and deploy Facebook Instant"
+name: "[Pipeline] Build and deploy Web"
 
 on:
   workflow_call:
     inputs:
+      fst_image:
+        required: true
+        type: string
       game_branch:
         required: true
         type: string
       frvr_tools_branch:
+        required: true
+        type: string
+      frvr_internal_branch:
         required: true
         type: string
     secrets:
@@ -37,99 +43,113 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout game repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
-      - name: '[FRVR Action] Execute metadata action'
-        id: metadata
+      - id: metadata
+        name: Execute metadata action
         uses: ./actions/.github/actions/getmetadata
     outputs:
+      fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}
 
-  ## --- Build Facebook Instant ---
-  build_facebook_instant:
-    name: Build FB Instant
+  ## --- BUILD TO WEB ---
+  build_web:
+    name: Build web version
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     needs: [gather_game_data]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
     steps:
       - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.game_branch }}
+        uses: actions/checkout@v2
 
       - name: Checkout private actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
-      - id: buildfbinstant
-        name: '[FRVR Action] Build Facebook Instant'
-        uses: ./actions/.github/actions/buildfbinstant
+      - id: buildweb
+        name: '[FRVR Action] Build action for WEB'
+        uses: ./actions/.github/actions/buildweb
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
     outputs:
-      filename: ${{ steps.buildfbinstant.outputs.filename }}
-      build_json: ${{ steps.buildfbinstant.outputs.build_json }}
+      filename: ${{ steps.buildweb.outputs.filename }}
+      build_json: ${{ steps.buildweb.outputs.build_json }}
 
-  # ## --- Deploy Facebook Instant binary ---
-  deploy_facebook_instant:
-    name: Deploy FB Instant
+
+  ## --- DEPLOY TO WEB ---
+  deploy_web:
+    name: Deploy web version
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant]
+    timeout-minutes: 15
+    needs: [gather_game_data, build_web]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
     steps:
       - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
+        uses: actions/checkout@v2
 
       - name: Checkout private actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
-      - name: '[FRVR Action] Deploy Facebook Instant'
-        uses: ./actions/.github/actions/deployfbinstant
+      - id: deployweb
+        name: '[FRVR Action] Deploy action for WEB'
+        uses: ./actions/.github/actions/deployweb
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          build_identifier: ${{ needs.build_web.outputs.filename }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
+    outputs:
+      deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
-  # ## --- Create the Asana task ---
+  ## --- Create the Asana task ---
   create_asana_task:
     name: Create Asana task
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_web, deploy_web]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -150,11 +170,11 @@ jobs:
         uses: ./actions/.github/actions/createasanaticket
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
+          game_branch: ${{ needs.gather_game_data.outputs.game_branch }}
+          deployed_filename: ${{ needs.build_web.outputs.filename }}
           frvr_tools_branch: 'stub'
           ticket_message: 'stub'
-          channel: 'Facebook Instant'
+          channel: 'web'
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
     outputs:
       task_url: ${{ steps.asanatask.outputs.task_url }}
@@ -164,7 +184,7 @@ jobs:
     name: Update Masterdoc
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_web, deploy_web]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -186,7 +206,7 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
+          build_json_filename: ${{ needs.build_web.outputs.build_json }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
@@ -196,7 +216,7 @@ jobs:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
+    needs: [gather_game_data, build_web, deploy_web, create_asana_task]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -218,5 +238,5 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          channel: 'instant'
+          channel: 'web'
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
