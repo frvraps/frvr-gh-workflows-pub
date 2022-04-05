@@ -52,7 +52,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: xs-375-tweak-web
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
       - id: metadata
@@ -83,7 +83,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: xs-375-tweak-web
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
       - id: buildweb
@@ -123,7 +123,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: xs-375-tweak-web
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
       - id: deployweb
@@ -162,7 +162,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: xs-375-tweak-web  # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
           path: ./actions
 
       - id: asanatask
@@ -197,7 +197,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: xs-375-tweak-web  # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
           path: ./actions
 
       - name: '[FRVR Action] Update Masterdoc'
@@ -229,7 +229,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: xs-375-tweak-web  # TODO: Replace this with main
+          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
           path: ./actions
 
       - name: '[FRVR Action] Slack Notify from Pipeline'
