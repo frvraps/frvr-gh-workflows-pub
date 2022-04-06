@@ -24,10 +24,6 @@ on:
         required: true
       GCS_SA_KEY:
         required: true
-      ASANA_WORKSPACE_ID:
-        required: true
-      ASANA_PROJECT_ID:
-        required: true
       ASANA_PAT:
         required: true
       GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
@@ -149,7 +145,8 @@ jobs:
           ref: XS-369-Pipeline-merges  # TODO: Replace this with main
           path: ./actions
 
-      - name: '[FRVR Action] Create Asana task'
+      - id: asanatask
+        name: '[FRVR Action] Create Asana task'
         uses: ./actions/.github/actions/createasanaticket
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
@@ -157,10 +154,10 @@ jobs:
           deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
           frvr_tools_branch: 'stub'
           ticket_message: 'stub'
-          channel: 'facebook_instant'
-          ASANA_WORKSPACE_ID: ${{ secrets.ASANA_WORKSPACE_ID }}
-          ASANA_PROJECT_ID: ${{ secrets.ASANA_PROJECT_ID }}
+          channel: 'Facebook Instant'
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
+    outputs:
+      task_url: ${{ steps.asanatask.outputs.task_url }}
 
   ## --- Update Masterdoc ---
   update_master_doc:
@@ -199,7 +196,7 @@ jobs:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -222,4 +219,4 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'instant'
-
+          task_url: ${{ needs.create_asana_task.outputs.task_url }}
