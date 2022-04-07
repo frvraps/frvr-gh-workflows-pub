@@ -82,49 +82,49 @@ jobs:
       deploy_url: ${{ steps.buildanddeployweb.outputs.deploy_url }}
 
   ## --- Run GUI Automated tests on WEB ---
-  run_web_gui_automated_tests:
-    name: GUI automated tests on web
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_and_deploy_web]
-    defaults:
-      run:
-        working-directory: /app/tests
-    env:
-      TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
-      HEADLESS: true
-      TESTS_PATH: ${{ github.workspace }}/game/tests
-    container:
-      image: ${{ inputs.automation_image }}:latest
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
-    steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v3
-        with:
-          path: ${{ github.workspace }}/game
+  # run_web_gui_automated_tests:
+  #   name: GUI automated tests on web
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [gather_game_data, build_and_deploy_web]
+  #   defaults:
+  #     run:
+  #       working-directory: /app/tests
+  #   env:
+  #     TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+  #     HEADLESS: true
+  #     TESTS_PATH: ${{ github.workspace }}/game/tests
+  #   container:
+  #     image: ${{ inputs.automation_image }}:latest
+  #     credentials:
+  #       username: ${{ github.repository_owner }}
+  #       password: ${{ secrets.CR_PAT }}
+  #   steps:
+  #     - name: Checkout the repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: ${{ github.workspace }}/game
       
-      - name: Install sudo
-        run: |
-          apt-get update && apt-get -y install sudo
+  #     - name: Install sudo
+  #       run: |
+  #         apt-get update && apt-get -y install sudo
 
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          path: ./actions
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         path: ./actions
 
-      - name: '[FRVR Action] Web GUI tests'
-        uses: ./actions/.github/actions/runwebguitests
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        env:
-          TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
-          HEADLESS: true
-          TESTS_PATH: ${{ github.workspace }}/game/tests
+  #     - name: '[FRVR Action] Web GUI tests'
+  #       uses: ./actions/.github/actions/runwebguitests
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #       env:
+  #         TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+  #         HEADLESS: true
+  #         TESTS_PATH: ${{ github.workspace }}/game/tests
 
   ## --- Build Facebook Instant binary ---
   # build_facebook_instant:
