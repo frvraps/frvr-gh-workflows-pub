@@ -9,6 +9,9 @@ on:
       frvr_tools_branch:
         required: true
         type: string
+      asana_check:
+        required: true
+        type: string
     secrets:
       CR_PAT:
         required: true
@@ -152,9 +155,10 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
-          frvr_tools_branch: 'stub'
-          ticket_message: 'stub'
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          ticket_message: ''
           channel: 'Facebook Instant'
+          asana_check: ${{ github.event.inputs.asana_check }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
     outputs:
       task_url: ${{ steps.asanatask.outputs.task_url }}
@@ -187,6 +191,7 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
+          channel: 'instant'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
