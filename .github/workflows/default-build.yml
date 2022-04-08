@@ -127,27 +127,27 @@ jobs:
   #         TESTS_PATH: ${{ github.workspace }}/game/tests
 
   ## --- Build Facebook Instant binary ---
-  build_facebook_instant:
-    name: Build FB Instant
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v2
+  # build_facebook_instant:
+  #   name: Build FB Instant
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [gather_game_data]
+  #   steps:
+  #     - name: Checkout game repo
+  #       uses: actions/checkout@v2
 
-      - name: Checkout private actions
-        uses: actions/checkout@v2                     
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v2                     
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         ref: main
+  #         path: ./actions
 
-      - id: buildfbinstant
-        name: '[FRVR Action] Build Facebook Instant'
-        uses: ./actions/.github/actions/buildfbinstant
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+  #     - id: buildfbinstant
+  #       name: '[FRVR Action] Build Facebook Instant'
+  #       uses: ./actions/.github/actions/buildfbinstant
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #         GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
