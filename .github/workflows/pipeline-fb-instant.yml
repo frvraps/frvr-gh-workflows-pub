@@ -49,7 +49,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges # TODO: Replace this with main
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Execute metadata action'
@@ -75,7 +75,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
+          ref: main
           path: ./actions
 
       - id: buildfbinstant
@@ -111,7 +111,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges # TODO: Replace this with main
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Deploy Facebook Instant'
@@ -145,7 +145,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
+          ref: main
           path: ./actions
 
       - id: asanatask
@@ -181,7 +181,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Update Masterdoc'
@@ -214,7 +214,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-369-Pipeline-merges  # TODO: Replace this with main
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Slack Notify from Pipeline'
