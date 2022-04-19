@@ -93,7 +93,7 @@ jobs:
       filename: ${{ steps.buildfbinstant.outputs.filename }}
       build_json: ${{ steps.buildfbinstant.outputs.build_json }}
 
-  # ## --- Deploy Facebook Instant binary ---
+  ## --- Deploy Facebook Instant binary ---
   deploy_facebook_instant:
     name: Deploy FB Instant
     runs-on: ubuntu-latest
@@ -114,7 +114,8 @@ jobs:
           ref: main
           path: ./actions
 
-      - name: '[FRVR Action] Deploy Facebook Instant'
+      - id: deploy_facebook
+        name: '[FRVR Action] Deploy Facebook Instant'
         uses: ./actions/.github/actions/deployfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
@@ -126,8 +127,10 @@ jobs:
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      deploy_url: ${{ steps.deploy_facebook.outputs.deploy_url }}
 
-  # ## --- Create the Asana task ---
+  ## --- Create the Asana task ---
   create_asana_task:
     name: Create Asana task
     runs-on: ubuntu-latest
@@ -225,3 +228,4 @@ jobs:
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'instant'
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
+          deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
