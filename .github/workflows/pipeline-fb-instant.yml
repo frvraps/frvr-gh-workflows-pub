@@ -159,7 +159,7 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          ticket_message: ''
+          ticket_message: 'Play Link: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}'
           channel: 'Facebook Instant'
           asana_check: ${{ github.event.inputs.asana_check }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
