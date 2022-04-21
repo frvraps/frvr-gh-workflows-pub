@@ -61,6 +61,9 @@ jobs:
       - id: metadata
         name: Execute metadata action
         uses: ./actions/.github/actions/getmetadata
+        with:
+          channel: 'web'
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
@@ -106,7 +109,6 @@ jobs:
     outputs:
       filename: ${{ steps.buildweb.outputs.filename }}
       build_json: ${{ steps.buildweb.outputs.build_json }}
-
 
   ## --- DEPLOY TO WEB ---
   deploy_web:
@@ -248,4 +250,5 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'web'
+          deploy_url: ${{ needs.deploy_web.outputs.deploy_url }}
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
