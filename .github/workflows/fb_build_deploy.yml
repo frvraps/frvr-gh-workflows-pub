@@ -4,9 +4,8 @@ on:
   workflow_call:
     inputs:
       frvr_tools_branch:
-        description: 'Frvr-tools branch'
         required: true
-        default: 'develop'
+        type: string
     secrets:
       CR_PAT:
         required: true
