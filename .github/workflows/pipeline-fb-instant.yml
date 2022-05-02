@@ -59,7 +59,7 @@ jobs:
         id: metadata
         uses: ./actions/.github/actions/getmetadata
         with:
-          channel: 'samsung_instant_play'
+          channel: 'facebook_instant'
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
