@@ -58,6 +58,9 @@ jobs:
       - name: '[FRVR Action] Execute metadata action'
         id: metadata
         uses: ./actions/.github/actions/getmetadata
+        with:
+          channel: 'samsung_instant_play'
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
