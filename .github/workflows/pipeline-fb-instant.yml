@@ -3,6 +3,9 @@ name: "[Pipeline] Build and deploy Facebook Instant"
 on:
   workflow_call:
     inputs:
+      fst_image:
+        required: true
+        type: string
       game_branch:
         required: true
         type: string
