@@ -52,7 +52,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: XS-369-Pipeline-merges
           path: ./actions
 
       - name: '[FRVR Action] Execute metadata action'
