@@ -85,7 +85,7 @@ jobs:
 
       - id: buildfbinstant
         name: '[FRVR Action] Build Facebook Instant'
-        uses: ./actions/.github/actions/buildfbinstant
+        uses: ./actions/.github/actions/buildfbinstant_container
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
