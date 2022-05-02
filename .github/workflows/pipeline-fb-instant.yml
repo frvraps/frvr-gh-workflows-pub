@@ -105,42 +105,47 @@ jobs:
       filename: ${{ steps.buildfbinstant.outputs.filename }}
       build_json: ${{ steps.buildfbinstant.outputs.build_json }}
 
-  # ## --- Deploy Facebook Instant binary ---
-  # deploy_facebook_instant:
-  #   name: Deploy FB Instant
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_facebook_instant]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
+  ## --- Deploy Facebook Instant binary ---
+  deploy_facebook_instant:
+    name: Deploy FB Instant
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_facebook_instant]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: XS-369-Pipeline-merges
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: XS-369-Pipeline-merges
+          path: ./actions
 
-  #     - id: deploy_facebook
-  #       name: '[FRVR Action] Deploy Facebook Instant'
-  #       uses: ./actions/.github/actions/deployfbinstant
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
-  #         GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
-  #         GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-  #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-  #   outputs:
-  #     deploy_url: ${{ steps.deploy_facebook.outputs.deploy_url }}
+      - id: deploy_facebook
+        name: '[FRVR Action] Deploy Facebook Instant'
+        uses: ./actions/.github/actions/deployfbinstant_container
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      deploy_url: ${{ steps.deploy_facebook.outputs.deploy_url }}
 
   # ## --- Create the Asana task ---
   # create_asana_task:
