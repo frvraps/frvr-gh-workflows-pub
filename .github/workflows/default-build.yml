@@ -1,4 +1,4 @@
-name: "[CI/CD] Build Web and Facebook Instant"
+name: "[CI/CD] Default FRVR CI"
 
 on:
   workflow_call:
@@ -18,6 +18,8 @@ on:
         required: true
       GCS_PROJECT:
         required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
       GH_PACKAGE_REGISTRY_PAT:
         required: true
 
@@ -29,10 +31,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout game repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Checkout private actions
-        uses: actions/checkout@v2                     
+        uses: actions/checkout@v3                     
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
@@ -47,9 +49,9 @@ jobs:
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
 
-  ## --- BUILD AND DEPLOY TO WEB ---
-  build_and_deploy_web:
-    name: Build and deploy web version
+  ## --- BUILD TO WEB ---
+  build_web:
+    name: Build web version
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [gather_game_data]
@@ -60,38 +62,86 @@ jobs:
         password: ${{ secrets.CR_PAT }}
     steps:
       - name: Checkout game repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
+          ref: main
           path: ./actions
 
-      - id: buildanddeployweb
-        name: '[FRVR Action] Build and deploy action for WEB'
-        uses: ./actions/.github/actions/buildanddeployweb
+      - id: buildweb
+        name: '[FRVR Action] Build action for WEB'
+        uses: ./actions/.github/actions/buildweb
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      filename: ${{ steps.buildweb.outputs.filename }}
+      build_json: ${{ steps.buildweb.outputs.build_json }}
+
+  ## --- DEPLOY TO WEB ---
+  deploy_web:
+    name: Deploy web version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [gather_game_data, build_web]
+    container:
+      image: ${{ inputs.fst_image }}:${{ needs.gather_game_data.outputs.fst_version }}
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
+
+      - id: deployweb
+        name: '[FRVR Action] Deploy action for WEB'
+        uses: ./actions/.github/actions/deployweb
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
+          build_identifier: ${{ needs.build_web.outputs.filename }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
           GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
     outputs:
-      deploy_url: ${{ steps.buildanddeployweb.outputs.deploy_url }}
+      deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
   ## --- Run GUI Automated tests on WEB ---
   # run_web_gui_automated_tests:
   #   name: GUI automated tests on web
   #   runs-on: ubuntu-latest
   #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_and_deploy_web]
+  #   needs: [gather_game_data, build_web, deploy_web]
   #   defaults:
   #     run:
   #       working-directory: /app/tests
   #   env:
-  #     TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+  #     TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
   #     HEADLESS: true
   #     TESTS_PATH: ${{ github.workspace }}/game/tests
   #   container:
@@ -114,6 +164,7 @@ jobs:
   #       with:
   #         repository: frvraps/frvr-gh-workflows
   #         token: ${{ secrets.GH_TOKEN }}
+  #         ref: main
   #         path: ./actions
 
   #     - name: '[FRVR Action] Web GUI tests'
@@ -122,32 +173,6 @@ jobs:
   #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
   #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
   #       env:
-  #         TEST_URL: ${{ needs.build_and_deploy_web.outputs.deploy_url }}
+  #         TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
   #         HEADLESS: true
   #         TESTS_PATH: ${{ github.workspace }}/game/tests
-
-  ## --- Build Facebook Instant binary ---
-  # build_facebook_instant:
-  #   name: Build FB Instant
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v2
-
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v2                     
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: main
-  #         path: ./actions
-
-  #     - id: buildfbinstant
-  #       name: '[FRVR Action] Build Facebook Instant'
-  #       uses: ./actions/.github/actions/buildfbinstant
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
