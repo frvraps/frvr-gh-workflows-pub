@@ -112,7 +112,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: XS-437
           path: ./actions
 
       - id: deploy_sip
@@ -131,81 +131,13 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deploy_sip.outputs.deploy_url }}
 
-  # ## --- Create the Asana task ---
-  create_asana_task:
-    name: Create Asana task
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_sip, deploy_sip]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
-
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
-
-      - id: asanatask
-        name: '[FRVR Action] Create Asana task'
-        uses: ./actions/.github/actions/createasanaticket
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          deployed_filename: ${{ needs.build_sip.outputs.filename }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          ticket_message: 'Deploy Link: ${{ needs.deploy_sip.outputs.deploy_url }}'
-          channel: 'sip'
-          asana_check: ${{ github.event.inputs.asana_check }}
-          ASANA_PAT: ${{ secrets.ASANA_PAT }}
-    outputs:
-      task_url: ${{ steps.asanatask.outputs.task_url }}
-
-  ## --- Update Masterdoc ---
-  update_master_doc:
-    name: Update Masterdoc
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_sip, deploy_sip]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
-
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
-
-      - name: '[FRVR Action] Update Masterdoc'
-        uses: ./actions/.github/actions/updatemasterdoc
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_json_filename: ${{ needs.build_sip.outputs.build_json }}
-          channel: 'samsung-instant-play'
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
 
   ## --- Notify slack ---
   notify_slack:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_sip, deploy_sip, create_asana_task]
+    needs: [gather_game_data, build_sip, deploy_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -218,7 +150,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: XS-437
           path: ./actions
 
       - name: '[FRVR Action] Slack Notify from Pipeline'
