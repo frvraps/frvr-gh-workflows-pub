@@ -115,7 +115,8 @@ jobs:
           ref: main
           path: ./actions
 
-      - name: '[FRVR Action] Deploy SIP'
+      - id: deploy_sip
+        name: '[FRVR Action] Deploy SIP'
         uses: ./actions/.github/actions/deploysip
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
@@ -127,6 +128,8 @@ jobs:
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      deploy_url: ${{ steps.deploy_sip.outputs.deploy_url }}
 
   # ## --- Create the Asana task ---
   create_asana_task:
@@ -157,7 +160,7 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           deployed_filename: ${{ needs.build_sip.outputs.filename }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          ticket_message: ''
+          ticket_message: 'Deploy Link: ${{ needs.deploy_sip.outputs.deploy_url }}'
           channel: 'sip'
           asana_check: ${{ github.event.inputs.asana_check }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
@@ -225,4 +228,5 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'samsung-instant-play'
+          deploy_url: ${{ needs.deploy_sip.outputs.deploy_url }}
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
