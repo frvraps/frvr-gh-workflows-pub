@@ -12,6 +12,9 @@ on:
       asana_check:
         required: true
         type: string
+      comment:
+        required: true
+        type: string
     secrets:
       CR_PAT:
         required: true
@@ -122,6 +125,10 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
+          comment: '[GAME] ${{ github.event.inputs.game_branch }}
+          [ENGINE] ${{ github.event.inputs.frvr_tools_branch }}
+          [USER] ${{ github.actor }}
+          [COMMENT] ${{ github.event.inputs.comment }}'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
