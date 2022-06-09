@@ -114,7 +114,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-443-add-notes-to-fb-instant-deploys
+          ref: main
           path: ./actions
 
       - id: deploy_facebook
@@ -137,102 +137,102 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deploy_facebook.outputs.deploy_url }}
 
-  # ## --- Create the Asana task ---
-  # create_asana_task:
-  #   name: Create Asana task
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
+  ## --- Create the Asana task ---
+  create_asana_task:
+    name: Create Asana task
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: main
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
 
-  #     - id: asanatask
-  #       name: '[FRVR Action] Create Asana task'
-  #       uses: ./actions/.github/actions/createasanaticket
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         ticket_message: 'Play Link: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}'
-  #         channel: 'Facebook Instant'
-  #         asana_check: ${{ github.event.inputs.asana_check }}
-  #         ASANA_PAT: ${{ secrets.ASANA_PAT }}
-  #   outputs:
-  #     task_url: ${{ steps.asanatask.outputs.task_url }}
+      - id: asanatask
+        name: '[FRVR Action] Create Asana task'
+        uses: ./actions/.github/actions/createasanaticket
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          ticket_message: 'Play Link: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}'
+          channel: 'Facebook Instant'
+          asana_check: ${{ github.event.inputs.asana_check }}
+          ASANA_PAT: ${{ secrets.ASANA_PAT }}
+    outputs:
+      task_url: ${{ steps.asanatask.outputs.task_url }}
 
-  # ## --- Update Masterdoc ---
-  # update_master_doc:
-  #   name: Update Masterdoc
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
+  ## --- Update Masterdoc ---
+  update_master_doc:
+    name: Update Masterdoc
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: main
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
 
-  #     - name: '[FRVR Action] Update Masterdoc'
-  #       uses: ./actions/.github/actions/updatemasterdoc
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
-  #         channel: 'instant'
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #         GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-  #         GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
+      - name: '[FRVR Action] Update Masterdoc'
+        uses: ./actions/.github/actions/updatemasterdoc
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
+          channel: 'instant'
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
 
-  # ## --- Notify slack ---
-  # notify_slack:
-  #   name: Notify slack
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
+  ## --- Notify slack ---
+  notify_slack:
+    name: Notify slack
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: main
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
 
-  #     - name: '[FRVR Action] Slack Notify from Pipeline'
-  #       uses: ./actions/.github/actions/slacknotifypipeline
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         channel: 'instant'
-  #         task_url: ${{ needs.create_asana_task.outputs.task_url }}
-  #         deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
+      - name: '[FRVR Action] Slack Notify from Pipeline'
+        uses: ./actions/.github/actions/slacknotifypipeline
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          channel: 'instant'
+          task_url: ${{ needs.create_asana_task.outputs.task_url }}
+          deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
