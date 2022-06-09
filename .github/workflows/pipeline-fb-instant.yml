@@ -127,6 +127,7 @@ jobs:
           build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
           comment: '[GAME] ${{ github.event.inputs.game_branch }}
           [ENGINE] ${{ github.event.inputs.frvr_tools_branch }}
+          [USER] ${{ github.actor }}
           [COMMENT] ${{ github.event.inputs.comment }}'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
