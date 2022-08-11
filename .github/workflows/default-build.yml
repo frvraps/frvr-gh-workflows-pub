@@ -173,6 +173,6 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         env:
-          TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
+          TEST_URL: https://beta.frvr.com/guberdriver/d5s4ss
           HEADLESS: true
           TESTS_PATH: ${{ github.workspace }}/game/tests
