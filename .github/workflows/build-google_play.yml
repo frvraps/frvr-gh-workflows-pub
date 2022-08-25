@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 20
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:2.3.111
+      image: ghcr.io/frvraps/fst:2.4.7
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
