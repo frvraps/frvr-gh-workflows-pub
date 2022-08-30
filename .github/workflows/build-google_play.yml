@@ -21,7 +21,8 @@ on:
         required: true
       GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
         required: true
-
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
 jobs:
   ## --- GET GAME METADATA ---
   gather_game_data:
@@ -74,3 +75,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secret.GCS_DEVOPS_BINARY_BUCKET_KEY }}
