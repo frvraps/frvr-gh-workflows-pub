@@ -19,7 +19,8 @@ on:
         required: true
       GH_PACKAGE_REGISTRY_PAT:
         required: true
-
+      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -72,3 +73,4 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
