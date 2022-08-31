@@ -1,0 +1,78 @@
+name: "[CI/CD] Build Samsung Galaxy release package"
+
+on:
+  workflow_call:
+    inputs:
+      github_run_number:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      MATCH_DEPLOY_KEY:
+        required: true
+      MATCH_PASSWORD:
+        required: true
+      MATCH_REPO:
+        required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
+      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
+jobs:
+  ## --- GET GAME METADATA ---
+  gather_game_data:
+    name: Gather game metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
+
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: metadata
+        name: Execute metadata action
+        uses: ./actions/.github/actions/getmetadata
+    outputs:
+      game_name: ${{ steps.metadata.outputs.game_name }}
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
+
+  ## --- Generate Samsung Galaxy project for game ---
+  generate_samsunggalaxy:
+    name: Generate Samsung Galaxy project
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [gather_game_data]
+    container:
+      image: ghcr.io/frvraps/fst:2.4.7
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout private actions
+        uses: actions/checkout@v2                     
+        with:
+          repository: frvraps/frvr-gh-workflows 
+          ref: feature/CH-464-add-support-for-GH-Actions-release-build
+          token: ${{ secrets.GH_TOKEN }}
+          path: ./actions
+
+      - id: generatesamsunggalaxy
+        name: '[FRVR Action] Generate Samsung Galaxy  Project release bundle'
+        uses: ./actions/.github/actions/generatesamsunggalaxy
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
