@@ -1,4 +1,4 @@
-name: "[Pipeline] Build and deploy Facebook Instant"
+name: "[Pipeline] Build and deploy SIP"
 
 on:
   workflow_call:
@@ -10,9 +10,6 @@ on:
         required: true
         type: string
       asana_check:
-        required: true
-        type: string
-      comment:
         required: true
         type: string
     secrets:
@@ -34,6 +31,7 @@ on:
         required: true
       GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
         required: true
+
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -61,9 +59,9 @@ jobs:
     outputs:
       game_name: ${{ steps.metadata.outputs.game_name }}
 
-  ## --- Build Facebook Instant ---
-  build_facebook_instant:
-    name: Build FB Instant
+  ## --- Build Samsung Instant Play ---
+  build_sip:
+    name: Build SIP
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [gather_game_data]
@@ -81,9 +79,9 @@ jobs:
           ref: main
           path: ./actions
 
-      - id: buildfbinstant
-        name: '[FRVR Action] Build Facebook Instant'
-        uses: ./actions/.github/actions/buildfbinstant
+      - id: buildsip
+        name: '[FRVR Action] Build SIP'
+        uses: ./actions/.github/actions/buildsip
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
@@ -93,15 +91,15 @@ jobs:
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
     outputs:
-      filename: ${{ steps.buildfbinstant.outputs.filename }}
-      build_json: ${{ steps.buildfbinstant.outputs.build_json }}
+      filename: ${{ steps.buildsip.outputs.filename }}
+      build_json: ${{ steps.buildsip.outputs.build_json }}
 
-  ## --- Deploy Facebook Instant binary ---
-  deploy_facebook_instant:
-    name: Deploy FB Instant
+  ## --- Deploy Samsung Instant Play binary ---
+  deploy_sip:
+    name: Deploy SIP
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant]
+    needs: [gather_game_data, build_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -117,32 +115,28 @@ jobs:
           ref: main
           path: ./actions
 
-      - id: deploy_facebook
-        name: '[FRVR Action] Deploy Facebook Instant'
-        uses: ./actions/.github/actions/deployfbinstant
+      - id: deploy_sip
+        name: '[FRVR Action] Deploy SIP'
+        uses: ./actions/.github/actions/deploysip
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
-          comment: '[GAME] ${{ github.event.inputs.game_branch }}
-          [ENGINE] ${{ github.event.inputs.frvr_tools_branch }}
-          [USER] ${{ github.actor }}
-          [COMMENT] ${{ github.event.inputs.comment }}'
+          build_identifier: ${{ needs.build_sip.outputs.filename }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
     outputs:
-      deploy_url: ${{ steps.deploy_facebook.outputs.deploy_url }}
+      deploy_url: ${{ steps.deploy_sip.outputs.deploy_url }}
 
-  ## --- Create the Asana task ---
+  # ## --- Create the Asana task ---
   create_asana_task:
     name: Create Asana task
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_sip, deploy_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -164,10 +158,10 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
-          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
+          deployed_filename: ${{ needs.build_sip.outputs.filename }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          ticket_message: 'Play Link: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}'
-          channel: 'Facebook Instant'
+          ticket_message: 'Deploy Link: ${{ needs.deploy_sip.outputs.deploy_url }}'
+          channel: 'sip'
           asana_check: ${{ github.event.inputs.asana_check }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
     outputs:
@@ -178,7 +172,7 @@ jobs:
     name: Update Masterdoc
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_sip, deploy_sip]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -200,8 +194,8 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
-          channel: 'instant'
+          build_json_filename: ${{ needs.build_sip.outputs.build_json }}
+          channel: 'samsung-instant-play'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
@@ -211,7 +205,7 @@ jobs:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
+    needs: [gather_game_data, build_sip, deploy_sip, create_asana_task]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -233,6 +227,6 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          channel: 'instant'
+          channel: 'samsung-instant-play'
+          deploy_url: ${{ needs.deploy_sip.outputs.deploy_url }}
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
-          deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}

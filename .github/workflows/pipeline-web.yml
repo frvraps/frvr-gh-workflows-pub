@@ -1,26 +1,41 @@
-name: "[CI/CD] Default FRVR CI"
+name: "[Pipeline] Build and deploy Web"
 
 on:
   workflow_call:
     inputs:
+      asana_check:
+        required: true
+        type: string
       fst_image:
         required: true
         type: string
-      automation_image:
+      game_branch:
         required: true
-        type: string  
+        type: string
+      frvr_tools_branch:
+        required: true
+        type: string
+      frvr_internal_branch:
+        required: true
+        type: string
     secrets:
       CR_PAT:
         required: true
       GH_TOKEN:
         required: true
-      GCS_SA_KEY:
-        required: true
       GCS_PROJECT:
+        required: true
+      AUTOMATED_RELEASE_CREDENTIALS:
+        required: true
+      GH_PACKAGE_REGISTRY_PAT:
         required: true
       GCS_DEVOPS_BINARY_BUCKET_KEY:
         required: true
-      GH_PACKAGE_REGISTRY_PAT:
+      GCS_SA_KEY:
+        required: true
+      ASANA_PAT:
+        required: true
+      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
         required: true
 
 jobs:
@@ -32,9 +47,11 @@ jobs:
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
-        uses: actions/checkout@v3                     
+        uses: actions/checkout@v3
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
@@ -44,10 +61,13 @@ jobs:
       - id: metadata
         name: Execute metadata action
         uses: ./actions/.github/actions/getmetadata
+        with:
+          channel: 'web'
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
-      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}
 
   ## --- BUILD TO WEB ---
   build_web:
@@ -81,7 +101,9 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          deploy_msg: ${{ needs.gather_game_data.outputs.deploy_msg }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
     outputs:
@@ -131,48 +153,102 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
-  # --- Run GUI Automated tests on WEB ---
-  run_web_gui_automated_tests:
-    name: GUI automated tests on web
+  ## --- Create the Asana task ---
+  create_asana_task:
+    name: Create Asana task
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [gather_game_data, build_web, deploy_web]
-    defaults:
-      run:
-        working-directory: /app/tests
-    env:
-      TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
-      HEADLESS: true
-      TESTS_PATH: ${{ github.workspace }}/game/tests
-    container:
-      image: ${{ inputs.automation_image }}:latest
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
     steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v2
+      - name: Checkout game repo
+        uses: actions/checkout@v3
         with:
-          path: ${{ github.workspace }}/game
-      
-      - name: Install sudo
-        run: |
-          apt-get update && apt-get -y install sudo
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
           ref: main
           path: ./actions
 
-      - name: '[FRVR Action] Web GUI tests'
-        uses: ./actions/.github/actions/runwebguitests
+      - id: asanatask
+        name: '[FRVR Action] Create Asana task'
+        uses: ./actions/.github/actions/createasanaticket
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          deployed_filename: ${{ needs.build_web.outputs.filename }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          ticket_message: "Beta Web deploy link: ${{ needs.deploy_web.outputs.deploy_url }}"
+          channel: 'web'
+          asana_check: ${{ github.event.inputs.asana_check }}
+          ASANA_PAT: ${{ secrets.ASANA_PAT }}
+    outputs:
+      task_url: ${{ steps.asanatask.outputs.task_url }}
+
+  ## --- Update Masterdoc ---
+  update_master_doc:
+    name: Update Masterdoc
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_web, deploy_web]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
+
+      - name: '[FRVR Action] Update Masterdoc'
+        uses: ./actions/.github/actions/updatemasterdoc
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          build_json_filename: ${{ needs.build_web.outputs.build_json }}
+          channel: 'web'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        env:
-          TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
-          HEADLESS: true
-          TESTS_PATH: ${{ github.workspace }}/game/tests
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
+
+  ## --- Notify slack ---
+  notify_slack:
+    name: Notify slack
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_web, deploy_web, create_asana_task]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
+
+      - name: '[FRVR Action] Slack Notify from Pipeline'
+        uses: ./actions/.github/actions/slacknotifypipeline
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          channel: 'web'
+          deploy_url: ${{ needs.deploy_web.outputs.deploy_url }}
+          task_url: ${{ needs.create_asana_task.outputs.task_url }}
