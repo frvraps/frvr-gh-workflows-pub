@@ -109,7 +109,7 @@ jobs:
     outputs:
       filename: ${{ steps.buildweb.outputs.filename }}
       build_json: ${{ steps.buildweb.outputs.build_json }}
-      binary_url: ${{ steps.buildweb.outpus.binary_url }}
+      binary_url: ${{ steps.buildweb.outputs.binary_url }}
 
   ## --- DEPLOY TO WEB ---
   deploy_web:
