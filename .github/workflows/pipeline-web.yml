@@ -91,7 +91,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: feat/XS-463_binary_url_on_slack_notifications
           path: ./actions
 
       - id: buildweb
@@ -241,7 +241,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: feat/XS-463_binary_url_on_slack_notifications
           path: ./actions
 
       - name: '[FRVR Action] Slack Notify from Pipeline'
