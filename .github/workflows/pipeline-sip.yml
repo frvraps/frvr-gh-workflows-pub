@@ -93,7 +93,7 @@ jobs:
     outputs:
       filename: ${{ steps.buildsip.outputs.filename }}
       build_json: ${{ steps.buildsip.outputs.build_json }}
-      binary_url: ${{ steps.buildsip.outpus.binary_url }}
+      binary_url: ${{ steps.buildsip.outputs.binary_url }}
 
   ## --- Deploy Samsung Instant Play binary ---
   deploy_sip:
