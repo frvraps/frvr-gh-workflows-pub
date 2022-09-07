@@ -95,7 +95,7 @@ jobs:
     outputs:
       filename: ${{ steps.buildfbinstant.outputs.filename }}
       build_json: ${{ steps.buildfbinstant.outputs.build_json }}
-      binary_url: ${{ steps.buildfbinstant.outpus.binary_url }}
+      binary_url: ${{ steps.buildfbinstant.outputs.binary_url }}
 
   ## --- Deploy Facebook Instant binary ---
   deploy_facebook_instant:
