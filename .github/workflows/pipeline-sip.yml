@@ -93,6 +93,7 @@ jobs:
     outputs:
       filename: ${{ steps.buildsip.outputs.filename }}
       build_json: ${{ steps.buildsip.outputs.build_json }}
+      binary_url: ${{ steps.buildsip.outputs.binary_url }}
 
   ## --- Deploy Samsung Instant Play binary ---
   deploy_sip:
@@ -230,3 +231,5 @@ jobs:
           channel: 'samsung-instant-play'
           deploy_url: ${{ needs.deploy_sip.outputs.deploy_url }}
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
+          binary_url: ${{ needs.build_sip.outputs.binary_url }}
+

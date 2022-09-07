@@ -95,6 +95,7 @@ jobs:
     outputs:
       filename: ${{ steps.buildfbinstant.outputs.filename }}
       build_json: ${{ steps.buildfbinstant.outputs.build_json }}
+      binary_url: ${{ steps.buildfbinstant.outputs.binary_url }}
 
   ## --- Deploy Facebook Instant binary ---
   deploy_facebook_instant:
@@ -236,3 +237,4 @@ jobs:
           channel: 'instant'
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
           deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
+          binary_url: ${{ needs.build_facebook_instant.outputs.binary_url }}
