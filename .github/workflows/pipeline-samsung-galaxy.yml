@@ -67,31 +67,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [gather_game_data]
+    container:
+      image: ghcr.io/frvraps/fst:2.4.7
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
     steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.game_branch }}
-
       - name: Checkout private actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2                     
         with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
+          repository: frvraps/frvr-gh-workflows 
           ref: feature/CH-464-add-support-for-GH-Actions-release-build
+          token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
-      - id: buildsamsunggalaxy
-        name: '[FRVR Action] Build Samsung Galaxy'
+      - id: generatesamsunggalaxy
+        name: '[FRVR Action] Generate Samsung Galaxy  Project release bundle'
         uses: ./actions/.github/actions/generatesamsunggalaxy
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
     outputs:
       filename: ${{ steps.buildsamsunggalaxy.outputs.filename }}
       build_json: ${{ steps.buildsamsunggalaxy.outputs.build_json }}
