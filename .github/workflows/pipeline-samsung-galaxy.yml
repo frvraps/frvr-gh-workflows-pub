@@ -143,7 +143,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.repository == 'never_run_this'
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -165,10 +165,10 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
-          deployed_filename: ${{ needs.build_facebook_instant.outputs.filename }}
+          deployed_filename: ${{ needs.build__samsung_galaxy.outputs.filename }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          ticket_message: 'Play Link: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}'
-          channel: 'Facebook Instant'
+          ticket_message: 'Play Link: ${{ needs.deploy__samsung_galaxy.outputs.deploy_url }}'
+          channel: 'SAmsung Galaxy Store'
           asana_check: ${{ github.event.inputs.asana_check }}
           ASANA_PAT: ${{ secrets.ASANA_PAT }}
     outputs:
@@ -180,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.repository == 'never_run_this'
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+    needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -202,7 +202,7 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
+          build_json_filename: ${{ needs.build_samsung_galaxy.outputs.build_json }}
           channel: 'instant'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
@@ -214,7 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     if: github.repository == 'never_run_this'
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant, create_asana_task]
+    needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy, create_asana_task]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -238,4 +238,4 @@ jobs:
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'instant'
           task_url: ${{ needs.create_asana_task.outputs.task_url }}
-          deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
+          deploy_url: ${{ needs.deploy_samsung_galaxy.outputs.deploy_url }}
