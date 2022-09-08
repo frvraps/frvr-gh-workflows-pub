@@ -6,6 +6,9 @@ on:
       github_run_number:
         required: true
         type: string
+      game_branch:
+        required: true
+        type: string
     secrets:
       CR_PAT:
         required: true
@@ -72,6 +75,7 @@ jobs:
         uses: ./actions/.github/actions/generatesamsunggalaxy
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
