@@ -92,7 +92,7 @@ jobs:
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
     outputs:
-      filename: ${{ steps.buildsamsunggalaxy.outputs.filename }}
+      filename: ${{ steps.generatesamsunggalaxy.outputs.filename }}
       build_json: ${{ steps.buildsamsunggalaxy.outputs.build_json }}
 
   ## --- Deploy Samsung Galaxy binary ---
