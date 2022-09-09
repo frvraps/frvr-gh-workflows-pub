@@ -77,7 +77,7 @@ jobs:
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows 
-          ref: XS-465
+          ref: main
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
@@ -94,6 +94,8 @@ jobs:
     outputs:
       filename: ${{ steps.buildsamsunggalaxy.outputs.filename }}
       build_json: ${{ steps.buildsamsunggalaxy.outputs.build_json }}
+      binary_url: ${{ steps.buildsamsunggalaxy.outputs.binary_url }}
+
 
   ## --- Deploy Samsung Galaxy binary ---
   deploy_samsung_galaxy:
@@ -113,7 +115,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-465
+          ref: main
           path: ./actions
 
       - id: deploy_samsung_galaxy
@@ -223,7 +225,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-465
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Slack Notify from Pipeline'
