@@ -77,13 +77,13 @@ jobs:
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows 
-          ref: feature/CH-464-add-support-for-GH-Actions-release-build
+          ref: XS-465
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
-      - id: generatesamsunggalaxy
+      - id: buildsamsunggalaxy
         name: '[FRVR Action] Generate Samsung Galaxy  Project release bundle'
-        uses: ./actions/.github/actions/generatesamsunggalaxy
+        uses: ./actions/.github/actions/buildsamsunggalaxy
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
@@ -92,7 +92,7 @@ jobs:
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
     outputs:
-      filename: ${{ steps.generatesamsunggalaxy.outputs.filename }}
+      filename: ${{ steps.buildsamsunggalaxy.outputs.filename }}
       build_json: ${{ steps.buildsamsunggalaxy.outputs.build_json }}
 
   ## --- Deploy Samsung Galaxy binary ---
@@ -137,48 +137,46 @@ jobs:
       deploy_url: ${{ steps.deploy_samsung_galaxy.outputs.deploy_url }}
 
   ## --- Create the Asana task ---
-  create_asana_task:
-    name: Create Asana task
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    if: github.repository == 'never_run_this'
-    needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
+  # create_asana_task:
+  #   name: Create Asana task
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy]
+  #   steps:
+  #     - name: Checkout game repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+  #         ref: ${{ github.event.inputs.game_branch }}
 
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         ref: main
+  #         path: ./actions
 
-      - id: asanatask
-        name: '[FRVR Action] Create Asana task'
-        uses: ./actions/.github/actions/createasanaticket
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          deployed_filename: ${{ needs.build__samsung_galaxy.outputs.filename }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          ticket_message: 'Play Link: ${{ needs.deploy__samsung_galaxy.outputs.deploy_url }}'
-          channel: 'SAmsung Galaxy Store'
-          asana_check: ${{ github.event.inputs.asana_check }}
-          ASANA_PAT: ${{ secrets.ASANA_PAT }}
-    outputs:
-      task_url: ${{ steps.asanatask.outputs.task_url }}
+  #     - id: asanatask
+  #       name: '[FRVR Action] Create Asana task'
+  #       uses: ./actions/.github/actions/createasanaticket
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         game_branch: ${{ github.event.inputs.game_branch }}
+  #         deployed_filename: ${{ needs.build__samsung_galaxy.outputs.filename }}
+  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+  #         ticket_message: 'Play Link: ${{ needs.deploy__samsung_galaxy.outputs.deploy_url }}'
+  #         channel: 'Samsung Galaxy Store'
+  #         asana_check: ${{ github.event.inputs.asana_check }}
+  #         ASANA_PAT: ${{ secrets.ASANA_PAT }}
+  #   outputs:
+  #     task_url: ${{ steps.asanatask.outputs.task_url }}
 
   ## --- Update Masterdoc ---
   update_master_doc:
     name: Update Masterdoc
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.repository == 'never_run_this'
     needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy]
     steps:
       - name: Checkout game repo
@@ -202,7 +200,7 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           build_json_filename: ${{ needs.build_samsung_galaxy.outputs.build_json }}
-          channel: 'instant'
+          channel: 'samsung_galaxystore'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
@@ -212,8 +210,7 @@ jobs:
     name: Notify slack
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.repository == 'never_run_this'
-    needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy, create_asana_task]
+    needs: [gather_game_data, build_samsung_galaxy, deploy_samsung_galaxy]
     steps:
       - name: Checkout game repo
         uses: actions/checkout@v3
@@ -226,7 +223,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: XS-465
           path: ./actions
 
       - name: '[FRVR Action] Slack Notify from Pipeline'
@@ -235,6 +232,6 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          channel: 'instant'
-          task_url: ${{ needs.create_asana_task.outputs.task_url }}
+          channel: 'samsung_galaxystore'
+          task_url: ''
           deploy_url: ${{ needs.deploy_samsung_galaxy.outputs.deploy_url }}
