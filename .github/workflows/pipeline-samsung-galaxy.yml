@@ -65,7 +65,7 @@ jobs:
   build_samsung_galaxy:
     name: Build Samsung Galaxy
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     needs: [gather_game_data]
     container:
       image: ghcr.io/frvraps/fst:2.4.7
