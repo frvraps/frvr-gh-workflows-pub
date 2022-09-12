@@ -68,7 +68,7 @@ jobs:
     timeout-minutes: 15
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:2.4.7
+      image: ghcr.io/frvraps/fst:feature-xs-467-remove-build-bump-for-android-release-builds
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
