@@ -58,8 +58,12 @@ jobs:
       - name: '[FRVR Action] Execute metadata action'
         id: metadata
         uses: ./actions/.github/actions/getmetadata
+        with:
+          channel: 'samsung_galaxystore'
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
     outputs:
       game_name: ${{ steps.metadata.outputs.game_name }}
+      fst_version: ${{ steps.metadata.outputs.fst_version }}
 
   ## --- Build Samsung Galaxy ---
   build_samsung_galaxy:
@@ -68,7 +72,7 @@ jobs:
     timeout-minutes: 15
     needs: [gather_game_data]
     container:
-      image: ghcr.io/frvraps/fst:feature-xs-467-remove-build-bump-for-android-release-builds
+      image: ghcr.io/frvraps/fst:${{ needs.gather_game_data.outputs.fst_version }}
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.CR_PAT }}
