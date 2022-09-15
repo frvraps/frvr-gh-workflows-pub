@@ -211,35 +211,36 @@ jobs:
   #         GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
   #         GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
 
-  # ## --- Notify slack ---
-  # notify_slack:
-  #   name: Notify slack
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_google_play, deploy_google_play]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
+  ## --- Notify slack ---
+  notify_slack:
+    name: Notify slack
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data, build_google_play]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+          ref: ${{ github.event.inputs.game_branch }}
 
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: main
-  #         path: ./actions
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: main
+          path: ./actions
 
-  #     - name: '[FRVR Action] Slack Notify from Pipeline'
-  #       uses: ./actions/.github/actions/slacknotifypipeline
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         channel: 'google_play'
-  #         task_url: ''
-  #         deploy_url: ''
-  #         binary_url: ${{ needs.build_google_play.outputs.binary_url }}
+      - name: '[FRVR Action] Slack Notify from Pipeline'
+        uses: ./actions/.github/actions/slacknotifypipeline
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          channel: 'google_play'
+          task_url: ''
+          deploy_url: ''
+          binary_url: ${{ needs.build_google_play.outputs.binary_url }}
+          note: "Automated deploy not available yet. Please deploy manually."
 
