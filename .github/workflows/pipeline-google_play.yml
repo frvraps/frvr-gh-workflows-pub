@@ -52,7 +52,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: XS-467_google_play
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Execute metadata action'
@@ -81,7 +81,7 @@ jobs:
         uses: actions/checkout@v2                     
         with:
           repository: frvraps/frvr-gh-workflows 
-          ref: XS-467_google_play
+          ref: main
           token: ${{ secrets.GH_TOKEN }}
           path: ./actions
 
