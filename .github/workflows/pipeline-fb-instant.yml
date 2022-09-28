@@ -194,6 +194,6 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
           channel: 'instant'
-          task_url: 'none'
+          task_url: ''
           deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
           binary_url: ${{ needs.build_facebook_instant.outputs.binary_url }}
