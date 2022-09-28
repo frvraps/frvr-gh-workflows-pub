@@ -9,7 +9,6 @@ on:
       frvr_tools_branch:
         required: true
         type: string
-        type: string
       comment:
         required: true
         type: string
