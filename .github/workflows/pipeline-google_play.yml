@@ -9,9 +9,6 @@ on:
       frvr_tools_branch:
         required: true
         type: string
-      asana_check:
-        required: true
-        type: string
       comment:
         required: true
         type: string
@@ -29,8 +26,6 @@ on:
       GCS_DEVOPS_BINARY_BUCKET_KEY:
         required: true
       GCS_SA_KEY:
-        required: true
-      ASANA_PAT:
         required: true
       GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
         required: true
@@ -100,7 +95,6 @@ jobs:
       build_json: ${{ steps.buildgoogleplay.outputs.build_json }}
       binary_url: ${{ steps.buildgoogleplay.outputs.binary_url }}
 
-
   # ## --- Deploy Google Play binary ---
   # deploy_google_play:
   #   name: Deploy Google Play
@@ -141,42 +135,6 @@ jobs:
   #         GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
   #   outputs:
   #     deploy_url: ${{ steps.deploy_google_play.outputs.deploy_url }}
-
-  ## --- Create the Asana task ---
-  # create_asana_task:
-  #   name: Create Asana task
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [gather_game_data, build_google_play, deploy_google_play]
-  #   steps:
-  #     - name: Checkout game repo
-  #       uses: actions/checkout@v3
-  #       with:
-  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-  #         ref: ${{ github.event.inputs.game_branch }}
-
-  #     - name: Checkout private actions
-  #       uses: actions/checkout@v3
-  #       with:
-  #         repository: frvraps/frvr-gh-workflows
-  #         token: ${{ secrets.GH_TOKEN }}
-  #         ref: main
-  #         path: ./actions
-
-  #     - id: asanatask
-  #       name: '[FRVR Action] Create Asana task'
-  #       uses: ./actions/.github/actions/createasanaticket
-  #       with:
-  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
-  #         game_branch: ${{ github.event.inputs.game_branch }}
-  #         deployed_filename: ${{ needs.build_google_play.outputs.filename }}
-  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-  #         ticket_message: 'Play Link: ${{ needs.deploy_google_play.outputs.deploy_url }}'
-  #         channel: 'Google Play Store'
-  #         asana_check: ${{ github.event.inputs.asana_check }}
-  #         ASANA_PAT: ${{ secrets.ASANA_PAT }}
-  #   outputs:
-  #     task_url: ${{ steps.asanatask.outputs.task_url }}
 
   # ## --- Update Masterdoc ---
   # update_master_doc:
