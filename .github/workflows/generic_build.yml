@@ -1,0 +1,70 @@
+name: "Create a game build"
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
+      game_branch:
+        required: true
+        type: string
+      frvr_tools_branch:
+        required: true
+        type: string
+      asana_check:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      AUTOMATED_RELEASE_CREDENTIALS:
+        required: true
+      GCS_SA_KEY:
+        required: true
+      GCS_PROJECT:
+        required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
+
+
+jobs:
+  ## --- Build Facebook Instant ---
+  build_facebook_instant:
+    name: Build FB Instant
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [gather_game_data]
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.game_repo }}
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: tests/portal
+          path: ./actions
+
+      - id: perform_build
+        name: '[FRVR Action] Perform build'
+        uses: ./actions/.github/actions/portal_build_{{ github.event.inputs.channel }}
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+    outputs:
+      filename: ${{ steps.buildfbinstant.outputs.filename }}
+      build_json: ${{ steps.buildfbinstant.outputs.build_json }}
