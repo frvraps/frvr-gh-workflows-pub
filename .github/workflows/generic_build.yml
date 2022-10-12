@@ -6,13 +6,16 @@ on:
       channel:
         required: true
         type: string
+      game_repository:
+        required: true
+        type: string
       game_branch:
         required: true
         type: string
       frvr_tools_branch:
         required: true
         type: string
-      asana_check:
+      comment:
         required: true
         type: string
     secrets:
@@ -38,12 +41,23 @@ jobs:
     name: Build FB Instant
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [gather_game_data]
+    env:
+      ACTION: ./actions/.github/actions/portal_build_${{ github.event.inputs.channel }}
     steps:
+
+      - name: Print inputs
+        run: |
+          echo "GAME REPO: ${{ github.event.inputs.game_repository }}"
+          echo "GAME REPO: ${{ inputs.game_repository }}"
+          echo "ACTION: ${ACTION}"
+          echo "ACTION: ${{ env.ACTION }}"
+          echo "CHANNEL: ${{ inputs.channel }}"
+
       - name: Checkout game repo
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.inputs.game_repo }}
+          repository: ${{ inputs.game_repository }}
+          token: ${{ secrets.GH_TOKEN }}
           ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
@@ -53,10 +67,15 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           ref: tests/portal
           path: ./actions
+      
+      - name: Setup build action
+        run: |
+          cd ./actions/.github/actions
+          mv portal_build_facebook_instant portal_generic
 
       - id: perform_build
         name: '[FRVR Action] Perform build'
-        uses: ./actions/.github/actions/portal_build_{{ github.event.inputs.channel }}
+        uses: ./actions/.github/actions/portal_generic
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
