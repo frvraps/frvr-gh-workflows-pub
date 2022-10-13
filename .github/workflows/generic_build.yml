@@ -6,7 +6,10 @@ on:
       channel:
         required: true
         type: string
-      game_repository:
+      game_name:
+        required: true
+        type: string
+      game_repo:
         required: true
         type: string
       game_branch:
@@ -34,15 +37,13 @@ on:
       GCS_DEVOPS_BINARY_BUCKET_KEY:
         required: true
 
-
 jobs:
-  ## --- Build Facebook Instant ---
-  build_facebook_instant:
-    name: Build FB Instant
+  build:
+    name: Build binary for selected channel
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      ACTION: ./actions/.github/actions/portal_build_${{ github.event.inputs.channel }}
+      ACTION: ./actions/.github/actions/portal_build_${{ inputs.channel }}
     steps:
 
       - name: Print inputs
@@ -52,13 +53,6 @@ jobs:
           echo "ACTION: ${ACTION}"
           echo "ACTION: ${{ env.ACTION }}"
           echo "CHANNEL: ${{ inputs.channel }}"
-
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ inputs.game_repository }}
-          token: ${{ secrets.GH_TOKEN }}
-          ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
         uses: actions/checkout@v3
@@ -71,19 +65,22 @@ jobs:
       - name: Setup build action
         run: |
           cd ./actions/.github/actions
-          mv portal_build_facebook_instant portal_generic
+          echo "Creating dynamic build action from 'portal_build_${{ inputs.channel }}'"
+          mv portal_build_${{ inputs.channel }} portal_dynamic_build_action
 
       - id: perform_build
         name: '[FRVR Action] Perform build'
-        uses: ./actions/.github/actions/portal_generic
+        uses: ./actions/.github/actions/portal_dynamic_build_action
         with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          game_name: ${{ inputs.game_name }}
+          game_repo: ${{ inputs.game_repo }}
+          game_branch: ${{ inputs.game_branch }}
+          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+
     outputs:
-      filename: ${{ steps.buildfbinstant.outputs.filename }}
-      build_json: ${{ steps.buildfbinstant.outputs.build_json }}
+      filename: ${{ steps.perform_build.outputs.filename }}
+      build_json: ${{ steps.perform_build.outputs.build_json }}
