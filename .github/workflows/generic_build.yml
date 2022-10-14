@@ -18,6 +18,9 @@ on:
       frvr_tools_branch:
         required: true
         type: string
+      webhook_url:
+        required: true
+        type: string
       comment:
         required: true
         type: string
@@ -75,6 +78,7 @@ jobs:
           game_name: ${{ inputs.game_name }}
           game_repo: ${{ inputs.game_repo }}
           game_branch: ${{ inputs.game_branch }}
+          webhook_url: ${{ inputs.webhook_url }}
           frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
