@@ -24,6 +24,9 @@ on:
       comment:
         required: true
         type: string
+      portal_build_id:
+        required: true
+        type: string
     secrets:
       CR_PAT:
         required: true
@@ -38,6 +41,8 @@ on:
       GH_PACKAGE_REGISTRY_PAT:
         required: true
       GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
+      ADMIN_PORTAL_API_KEY:
         required: true
 
 jobs:
@@ -79,7 +84,9 @@ jobs:
           game_branch: ${{ inputs.game_branch }}
           webhook_url: ${{ inputs.webhook_url }}
           frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
+          portal_build_id: ${{ inputs.portal_build_id }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          ADMIN_PORTAL_API_KEY: ${{ secrets.ADMIN_PORTAL_API_KEY }}
