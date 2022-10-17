@@ -71,8 +71,7 @@ jobs:
           echo "Creating dynamic build action from 'portal_build_${{ inputs.channel }}'"
           mv portal_build_${{ inputs.channel }} portal_dynamic_build_action
 
-      - id: perform_build
-        name: '[FRVR Action] Perform build'
+      - name: '[FRVR Action] Perform build'
         uses: ./actions/.github/actions/portal_dynamic_build_action
         with:
           game_name: ${{ inputs.game_name }}
@@ -84,7 +83,3 @@ jobs:
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-
-    outputs:
-      filename: ${{ steps.perform_build.outputs.filename }}
-      build_json: ${{ steps.perform_build.outputs.build_json }}

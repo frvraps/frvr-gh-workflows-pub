@@ -65,8 +65,7 @@ jobs:
           echo "Creating dynamic deploy action from 'portal_deploy_${{ inputs.channel }}'"
           mv portal_deploy_${{ inputs.channel }} portal_dynamic_deploy_action
 
-      - id: perform_deploy
-        name: '[FRVR Action] Perform deploy'
+      - name: '[FRVR Action] Perform deploy'
         uses: ./actions/.github/actions/portal_dynamic_deploy_action
         with:
           game_name: ${{ inputs.game_name }}
@@ -80,7 +79,4 @@ jobs:
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-    outputs:
-      deploy_url: ${{ steps.perform_deploy.outputs.deploy_url }}
-
   
