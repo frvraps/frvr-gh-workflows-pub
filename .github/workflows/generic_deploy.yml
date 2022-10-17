@@ -21,6 +21,9 @@ on:
       frvr_tools_branch:
         required: true
         type: string
+      webhook_url:
+        required: true
+        type: string
       comment:
         required: true
         type: string
@@ -70,6 +73,7 @@ jobs:
           game_repo: ${{ github.event.inputs.game_repo }}
           game_branch: ${{ inputs.game_branch }}
           game_binary: ${{ inputs.game_binary }}
+          webhook_url: ${{ inputs.webhook_url }}
           frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
