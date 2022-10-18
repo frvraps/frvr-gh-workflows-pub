@@ -17,3 +17,12 @@ on:
         required: true
       MATCH_REPO:
         required: true
+        
+jobs:
+  stub:
+    name: Stub job
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v2
