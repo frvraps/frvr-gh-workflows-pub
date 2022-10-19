@@ -1,0 +1,93 @@
+name: "Rollout a binary"
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
+      game_name:
+        required: true
+        type: string
+      game_repo:
+        required: true
+        type: string
+      game_branch:
+        required: true
+        type: string
+      channel_deploy_id:
+        type: string
+      rollout_status:
+        required: true
+        type: string
+      frvr_tools_branch:
+        required: true
+        type: string
+      webhook_url:
+        required: true
+        type: string
+      comment:
+        required: true
+        type: string
+      portal_build_id:
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      GH_TOKEN:
+        required: true
+      GCS_PROJECT:
+        required: true
+      AUTOMATED_RELEASE_CREDENTIALS:
+        required: true
+      GH_PACKAGE_REGISTRY_PAT:
+        required: true
+      GCS_DEVOPS_BINARY_BUCKET_KEY:
+        required: true
+      GCS_SA_KEY:
+        required: true
+      ADMIN_PORTAL_API_KEY:
+        required: true
+
+jobs:
+  deploy:
+    name: Rollout binary on selected channel
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ACTION: ./actions/.github/actions/portal_rollout_${{ inputs.channel }}
+    steps:
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: tests/portal
+          path: ./actions
+
+      - name: Setup rollout action
+        run: |
+          cd ./actions/.github/actions
+          echo "Creating dynamic deploy action from 'portal_deploy_${{ inputs.channel }}'"
+          mv portal_rollout_${{ inputs.channel }} portal_dynamic_rollout_action
+
+      - name: '[FRVR Action] Perform rollout'
+        uses: ./actions/.github/actions/portal_dynamic_rollout_action
+        with:
+          game_name: ${{ inputs.game_name }}
+          game_repo: ${{ github.event.inputs.game_repo }}
+          game_branch: ${{ inputs.game_branch }}
+          game_binary: ${{ inputs.game_binary }}
+          channel_deploy_id: ${{ inputs.channel_deploy_id }}
+          rollout_status: ${{ inputs.rollout_status }}
+          webhook_url: ${{ inputs.webhook_url }}
+          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
+          portal_build_id: ${{ inputs.portal_build_id }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
+          GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          ADMIN_PORTAL_API_KEY: ${{ secrets.ADMIN_PORTAL_API_KEY }}
+  
