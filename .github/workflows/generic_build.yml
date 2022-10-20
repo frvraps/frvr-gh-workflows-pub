@@ -9,19 +9,10 @@ on:
       game_name:
         required: true
         type: string
-      game_repo:
-        required: true
-        type: string
-      game_branch:
-        required: true
-        type: string
-      frvr_tools_branch:
+      build_config:
         required: true
         type: string
       webhook_url:
-        required: true
-        type: string
-      comment:
         required: true
         type: string
       portal_build_id:
@@ -54,14 +45,6 @@ jobs:
       ACTION: ./actions/.github/actions/portal_build_${{ inputs.channel }}
     steps:
 
-      - name: Print inputs
-        run: |
-          echo "GAME REPO: ${{ github.event.inputs.game_repository }}"
-          echo "GAME REPO: ${{ inputs.game_repository }}"
-          echo "ACTION: ${ACTION}"
-          echo "ACTION: ${{ env.ACTION }}"
-          echo "CHANNEL: ${{ inputs.channel }}"
-
       - name: Checkout private actions
         uses: actions/checkout@v3
         with:
@@ -80,10 +63,8 @@ jobs:
         uses: ./actions/.github/actions/portal_dynamic_build_action
         with:
           game_name: ${{ inputs.game_name }}
-          game_repo: ${{ inputs.game_repo }}
-          game_branch: ${{ inputs.game_branch }}
+          build_config: ${{ inputs.build_config }}
           webhook_url: ${{ inputs.webhook_url }}
-          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           portal_build_id: ${{ inputs.portal_build_id }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
