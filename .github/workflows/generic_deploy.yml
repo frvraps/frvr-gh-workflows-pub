@@ -9,22 +9,10 @@ on:
       game_name:
         required: true
         type: string
-      game_repo:
-        required: true
-        type: string
-      game_branch:
-        required: true
-        type: string
-      game_binary:
-        required: true
-        type: string
-      frvr_tools_branch:
+      deploy_config:
         required: true
         type: string
       webhook_url:
-        required: true
-        type: string
-      comment:
         required: true
         type: string
       portal_build_id:
@@ -74,11 +62,8 @@ jobs:
         uses: ./actions/.github/actions/portal_dynamic_deploy_action
         with:
           game_name: ${{ inputs.game_name }}
-          game_repo: ${{ github.event.inputs.game_repo }}
-          game_branch: ${{ inputs.game_branch }}
-          game_binary: ${{ inputs.game_binary }}
+          deploy_config: ${{ inputs.deploy_config }}
           webhook_url: ${{ inputs.webhook_url }}
-          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           portal_build_id: ${{ inputs.portal_build_id }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
