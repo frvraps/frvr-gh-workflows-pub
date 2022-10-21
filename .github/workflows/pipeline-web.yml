@@ -102,8 +102,6 @@ jobs:
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
           
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
     outputs:
       filename: ${{ steps.buildweb.outputs.filename }}
       build_json: ${{ steps.buildweb.outputs.build_json }}
