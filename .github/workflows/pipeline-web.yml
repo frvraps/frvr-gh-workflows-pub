@@ -86,7 +86,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: test/build
+          ref: main
           path: ./actions
 
       - id: buildweb
@@ -129,7 +129,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: test/build
+          ref: main
           path: ./actions
 
       - id: deployweb
