@@ -83,6 +83,7 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
+          is_ci: true
           frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
