@@ -128,7 +128,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: test/pipeline_web_deploy
           path: ./actions
 
       - id: deployweb
@@ -149,67 +149,4 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
-  ## --- Update Masterdoc ---
-  update_master_doc:
-    name: Update Masterdoc
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_web, deploy_web]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
-
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
-
-      - name: '[FRVR Action] Update Masterdoc'
-        uses: ./actions/.github/actions/updatemasterdoc
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_json_filename: ${{ needs.build_web.outputs.build_json }}
-          channel: 'web'
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
-
-  ## --- Notify slack ---
-  notify_slack:
-    name: Notify slack
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_web, deploy_web]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
-
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
-
-      - name: '[FRVR Action] Slack Notify from Pipeline'
-        uses: ./actions/.github/actions/slacknotifypipeline
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          channel: 'web'
-          deploy_url: ${{ needs.deploy_web.outputs.deploy_url }}
-          task_url: ''
-          binary_url: ${{ needs.build_web.outputs.binary_url }}
+  
