@@ -114,7 +114,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: test/pipeline_web_deploy
           path: ./actions
 
       - id: deployweb
