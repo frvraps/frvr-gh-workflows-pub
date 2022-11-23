@@ -58,9 +58,6 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           ref: tests/webgui
           path: ./actions
-      
-      - name: Debug
-        uses: mxschmitt/action-tmate@v3
 
       - name: '[FRVR Action] Web GUI tests'
         uses: ./actions/.github/actions/runwebguitests
@@ -71,3 +68,12 @@ jobs:
           TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
           HEADLESS: true
           TESTS_PATH: ${{ github.workspace }}/game/tests
+          
+      - run: |
+          echo "-------- ls -l /app --------"
+          ls -l /app
+          echo "-------- ls -l /app/tests --------"
+          ls -l /app/tests
+          echo "-------- ls -l * --------"
+          cd /app/tests
+          ls -l *
