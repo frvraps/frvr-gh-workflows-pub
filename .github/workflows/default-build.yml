@@ -1,4 +1,4 @@
-name: "[CI/CD] Default FRVR CI"
+name: "[CI/CD] Default XS Game CI"
 
 on:
   workflow_call:
@@ -74,7 +74,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: ENG-584
+          ref: main
           path: ./actions
 
       - id: buildweb
@@ -109,7 +109,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: ENG-584
+          ref: main
           path: ./actions
 
       - id: deployweb
