@@ -88,10 +88,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-          
-      - if: always() && ${{ github.actor }} == 'RuiGamitoFRVR'
-        name: tmate
-        uses: mxschmitt/action-tmate@v3
         
     outputs:
       filename: ${{ steps.buildweb.outputs.filename }}
