@@ -133,7 +133,7 @@ jobs:
 
   ## --- Screenshot sanity ---
   screenshot_sanity:
-    name: Deploy web version
+    name: Screenshot sanity
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [gather_game_data, build_web]
@@ -157,7 +157,7 @@ jobs:
           path: ./actions
 
       - id: screenshottests
-        name: '[FRVR Action] Deploy action for WEB'
+        name: '[FRVR Action] Perfom screenshot sanity'
         uses: ./actions/.github/actions/runscreenshottests
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
