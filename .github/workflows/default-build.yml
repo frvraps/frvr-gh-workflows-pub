@@ -136,7 +136,7 @@ jobs:
     name: Screenshot sanity
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [gather_game_data, build_web]
+    needs: [gather_game_data, build_web, deploy_web]
     # container:
     #   image: ${{ inputs.fst_image }}:latest
     #   credentials:
@@ -163,6 +163,7 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           build_identifier: ${{ needs.build_web.outputs.filename }}
+          game_url: ${{ needs.deploy_web.outputs.deploy_url }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           is_ci: true
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
