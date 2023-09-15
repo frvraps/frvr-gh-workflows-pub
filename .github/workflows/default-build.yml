@@ -137,16 +137,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [gather_game_data, build_web]
-    container:
-      image: ${{ inputs.fst_image }}:latest
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.CR_PAT }}
+    # container:
+    #   image: ${{ inputs.fst_image }}:latest
+    #   credentials:
+    #     username: ${{ github.repository_owner }}
+    #     password: ${{ secrets.CR_PAT }}
     steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.inputs.game_branch }}
+      # - name: Checkout game repo
+      #   uses: actions/checkout@v3
+      #   with:
+      #     ref: ${{ github.event.inputs.game_branch }}
 
       - name: Checkout private actions
         uses: actions/checkout@v3
