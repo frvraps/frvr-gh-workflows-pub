@@ -46,11 +46,13 @@ jobs:
         uses: ./actions/.github/actions/getmetadata
         with:
           channel: 'web'
-          frvr_tools_branch: 'latest'
+          frvr_tools_branch: ${{ vars.OFFICIAL_FRVR_TOOLS_BRANCH }}
+          collect_kpis: 'true'
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
-      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}  
+      deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}
+      game_run_id: ${{ steps.metadata.outputs.game_run_id }}
 
   ## --- BUILD TO WEB ---
   build_web:
