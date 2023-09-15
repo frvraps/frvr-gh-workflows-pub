@@ -38,7 +38,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: PNX-958-add-screenshot-tests-action
           path: ./actions
 
       - id: metadata
@@ -76,7 +76,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: PNX-958-add-screenshot-tests-action
           path: ./actions
 
       - id: buildweb
@@ -112,7 +112,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: PNX-958-add-screenshot-tests-action
           path: ./actions
 
       - id: deployweb
@@ -207,7 +207,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: main
+          ref: PNX-958-add-screenshot-tests-action
           path: ./actions
 
       - name: '[FRVR Action] Web GUI tests'
