@@ -9,6 +9,12 @@ on:
       automation_image:
         required: true
         type: string
+      QA_SERVICE:
+        required: false
+        type: string
+      BUCKET_URI:
+        required: false
+        type: string  
     secrets:
       CR_PAT:
         required: true
@@ -48,11 +54,14 @@ jobs:
           channel: 'web'
           frvr_tools_branch: ${{ vars.OFFICIAL_FRVR_TOOLS_BRANCH }}
           collect_kpis: 'true'
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          QA_SERVICE: ${{ inputs.QA_SERVICE }}
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
       deploy_msg: ${{ steps.metadata.outputs.deploy_msg }}
       game_run_id: ${{ steps.metadata.outputs.game_run_id }}
+      storage_name: ${{ steps.metadata.outputs.storage_name }}
 
   ## --- BUILD TO WEB ---
   build_web:
@@ -94,6 +103,7 @@ jobs:
     outputs:
       filename: ${{ steps.buildweb.outputs.filename }}
       build_json: ${{ steps.buildweb.outputs.build_json }}
+      build_size: ${{ steps.buildweb.outputs.build_size }}
 
   ## --- DEPLOY TO WEB ---
   deploy_web:
@@ -166,8 +176,14 @@ jobs:
           game_branch: ${{ github.event.inputs.game_branch }}
           build_identifier: ${{ needs.build_web.outputs.filename }}
           game_url: ${{ needs.deploy_web.outputs.deploy_url }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
+          collect_kpis: 'true'
+          build_size: ${{ needs.build_web.outputs.build_size}}
+          storage_name: ${{ needs.gather_game_data.outputs.storage_name }}
           is_ci: true
+          bucket_uri: ${{ inputs.BUCKET_URI }}
+          qa_service: ${{ inputs.QA_SERVICE }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
           GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
