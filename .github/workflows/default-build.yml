@@ -14,7 +14,10 @@ on:
         type: string
       BUCKET_URI:
         required: false
-        type: string  
+        type: string
+      BUCKET_URI_PREFIX:
+        required: false
+        type: string
     secrets:
       CR_PAT:
         required: true
@@ -174,7 +177,6 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
-          build_identifier: ${{ needs.build_web.outputs.filename }}
           game_url: ${{ needs.deploy_web.outputs.deploy_url }}
           game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
           collect_kpis: 'true'
@@ -182,11 +184,10 @@ jobs:
           storage_name: ${{ needs.gather_game_data.outputs.storage_name }}
           is_ci: true
           bucket_uri: ${{ inputs.BUCKET_URI }}
+          bucket_uri_prefix: ${{ inputs.BUCKET_URI_PREFIX }}
           qa_service: ${{ inputs.QA_SERVICE }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
-          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
     # outputs:
     #   deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
@@ -194,7 +195,7 @@ jobs:
   run_web_gui_automated_tests:
     name: GUI automated tests on web
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [gather_game_data, build_web, deploy_web]
     defaults:
       run:
@@ -231,7 +232,13 @@ jobs:
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
+          collect_kpis: 'true'
+          qa_service: ${{ inputs.QA_SERVICE }}
         env:
           TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
           HEADLESS: true
           TESTS_PATH: ${{ github.workspace }}/game/tests
+
+      # - name: Setup tmate session
+      #   uses: mxschmitt/action-tmate@v3
