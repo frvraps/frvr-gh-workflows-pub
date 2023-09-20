@@ -152,17 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [gather_game_data, build_web, deploy_web]
-    # container:
-    #   image: ${{ inputs.fst_image }}:latest
-    #   credentials:
-    #     username: ${{ github.repository_owner }}
-    #     password: ${{ secrets.CR_PAT }}
     steps:
-      # - name: Checkout game repo
-      #   uses: actions/checkout@v3
-      #   with:
-      #     ref: ${{ github.event.inputs.game_branch }}
-
       - name: Checkout private actions
         uses: actions/checkout@v3
         with:
@@ -191,7 +181,7 @@ jobs:
     # outputs:
     #   deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
-  # --- Run GUI Automated tests on WEB ---
+  ## --- Run GUI Automated tests on WEB ---
   run_web_gui_automated_tests:
     name: GUI automated tests on web
     runs-on: ubuntu-latest
@@ -242,3 +232,32 @@ jobs:
 
       # - name: Setup tmate session
       #   uses: mxschmitt/action-tmate@v3
+
+  ## --- PATCH CI run completion to QA Services ---
+  signal_run_completion:
+    name: Patch completion to QA Service
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [gather_game_data, run_web_gui_automated_tests, screenshot_sanity]
+    if: always()
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: PNX-958-add-screenshot-tests-action
+          path: ./actions
+
+      - id: patch_completion
+        name: '[FRVR Action] Deploy action for WEB'
+        uses: ./actions/.github/actions/patchgameruncompletion
+        with:
+          game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
+          qa_service: ${{ inputs.QA_SERVICE }}
+          success: ${{ needs.run_web_gui_automated_tests.result || needs.screenshot_sanity.result }}
