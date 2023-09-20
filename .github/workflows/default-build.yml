@@ -255,7 +255,7 @@ jobs:
           path: ./actions
 
       - id: patch_completion
-        name: '[FRVR Action] Deploy action for WEB'
+        name: '[FRVR Action] Signal run completion to QA Service'
         uses: ./actions/.github/actions/patchgameruncompletion
         with:
           game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
