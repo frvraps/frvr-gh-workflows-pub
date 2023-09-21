@@ -178,8 +178,6 @@ jobs:
           qa_service: ${{ inputs.QA_SERVICE }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-    # outputs:
-    #   deploy_url: ${{ steps.deployweb.outputs.deploy_url }}
 
   ## --- Run GUI Automated tests on WEB ---
   run_web_gui_automated_tests:
@@ -229,9 +227,6 @@ jobs:
           TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
           HEADLESS: true
           TESTS_PATH: ${{ github.workspace }}/game/tests
-
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
 
   ## --- PATCH CI run completion to QA Services ---
   signal_run_completion:
