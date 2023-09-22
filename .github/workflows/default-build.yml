@@ -255,4 +255,4 @@ jobs:
         with:
           game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
           qa_service: ${{ inputs.QA_SERVICE }}
-          success: ${{ needs.run_web_gui_automated_tests.result || needs.screenshot_sanity.result }}
+          success: ${{ needs.run_web_gui_automated_tests.result && needs.screenshot_sanity.result }}
