@@ -31,6 +31,8 @@ on:
         required: true
       GH_PACKAGE_REGISTRY_PAT:
         required: true
+      QA_SERVICE_KEY:
+        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -59,6 +61,7 @@ jobs:
           collect_kpis: 'true'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           QA_SERVICE: ${{ inputs.QA_SERVICE }}
+          QA_SERVICE_KEY: ${{ secrets.QA_SERVICE_KEY }}
     outputs:
       fst_version: ${{ steps.metadata.outputs.fst_version }}
       game_name: ${{ steps.metadata.outputs.game_name }}
@@ -176,6 +179,7 @@ jobs:
           bucket_uri: ${{ inputs.BUCKET_URI }}
           bucket_uri_prefix: ${{ inputs.BUCKET_URI_PREFIX }}
           qa_service: ${{ inputs.QA_SERVICE }}
+          QA_SERVICE_KEY: ${{ secrets.QA_SERVICE_KEY }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
 
@@ -223,6 +227,7 @@ jobs:
           game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
           collect_kpis: 'true'
           qa_service: ${{ inputs.QA_SERVICE }}
+          QA_SERVICE_KEY: ${{ secrets.QA_SERVICE_KEY }}
         env:
           TEST_URL: ${{ needs.deploy_web.outputs.deploy_url }}
           HEADLESS: true
@@ -255,4 +260,5 @@ jobs:
         with:
           game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
           qa_service: ${{ inputs.QA_SERVICE }}
+          QA_SERVICE_KEY: ${{ secrets.QA_SERVICE_KEY }}
           success: ${{ needs.run_web_gui_automated_tests.result && needs.screenshot_sanity.result }}
