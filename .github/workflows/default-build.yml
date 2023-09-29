@@ -228,6 +228,8 @@ jobs:
           QA_SERVICE_KEY: ${{ secrets.QA_SERVICE_KEY }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+          GCS_PROJECT: ${{ secrets.GCS_PROJECT }}
 
   stop_runner:
     name: Stop self-hosted EC2 runner
