@@ -244,6 +244,11 @@ jobs:
     timeout-minutes: 15
     needs: [gather_game_data, build_web_for_check, start_runner]
     steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
+          
       - name: Checkout private actions
         uses: actions/checkout@v3
         with:
