@@ -120,6 +120,49 @@ jobs:
       build_json: ${{ steps.buildweb.outputs.build_json }}
       build_size: ${{ steps.buildweb.outputs.build_size }}
 
+  ## --- BUILD TO WEB ---
+  build_web_for_check:
+    name: Build web version
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [gather_game_data]
+    container:
+      image: ${{ inputs.fst_image }}:latest
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.CR_PAT }}
+    steps:
+      - name: Checkout game repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.game_branch }}
+
+      - name: Checkout private actions
+        uses: actions/checkout@v3
+        with:
+          repository: frvraps/frvr-gh-workflows
+          token: ${{ secrets.GH_TOKEN }}
+          ref: PNX-958-add-screenshot-tests-action
+          path: ./actions
+
+      - id: buildweb
+        name: '[FRVR Action] Build action for WEB'
+        uses: ./actions/.github/actions/buildweb
+        with:
+          game_name: ${{ needs.gather_game_data.outputs.game_name }}
+          game_branch: ${{ github.event.inputs.game_branch }}
+          is_ci: true
+          custom_params: --no-cp
+          frvr_internal_branch: ${{ github.event.inputs.frvr_internal_branch }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
+          GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+        
+    outputs:
+      filename: ${{ steps.buildweb.outputs.filename }}
+      build_json: ${{ steps.buildweb.outputs.build_json }}
+      build_size: ${{ steps.buildweb.outputs.build_size }}
+
   ## --- DEPLOY TO WEB ---
   deploy_web:
     name: Deploy web version
@@ -199,7 +242,7 @@ jobs:
     name: Screenshot sanity
     runs-on: game_ci_${{ inputs.game_sha }}
     timeout-minutes: 15
-    needs: [gather_game_data, build_web, deploy_web, start_runner]
+    needs: [gather_game_data, build_web_for_check, start_runner]
     steps:
       - name: Checkout private actions
         uses: actions/checkout@v3
@@ -216,10 +259,10 @@ jobs:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
           game_branch: ${{ github.event.inputs.game_branch }}
           game_url: ${{ needs.deploy_web.outputs.deploy_url }}
-          build_identifier: ${{ needs.build_web.outputs.filename }}
+          build_identifier: ${{ needs.build_web_for_check.outputs.filename }}
           game_run_id: ${{ needs.gather_game_data.outputs.game_run_id }}
           collect_kpis: 'true'
-          build_size: ${{ needs.build_web.outputs.build_size}}
+          build_size: ${{ needs.build_web_for_check.outputs.build_size}}
           storage_name: ${{ needs.gather_game_data.outputs.storage_name }}
           is_ci: true
           bucket_uri: ${{ inputs.BUCKET_URI }}
