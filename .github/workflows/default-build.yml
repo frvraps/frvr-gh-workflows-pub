@@ -120,9 +120,9 @@ jobs:
       build_json: ${{ steps.buildweb.outputs.build_json }}
       build_size: ${{ steps.buildweb.outputs.build_size }}
 
-  ## --- BUILD TO WEB ---
+  ## --- BUILD TO WEB (no CP for 'fsx check') ---
   build_web_for_check:
-    name: Build web version
+    name: Build web version (for fsx check)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [gather_game_data]
