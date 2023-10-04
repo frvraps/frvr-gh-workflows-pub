@@ -58,7 +58,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - id: metadata
@@ -100,7 +100,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - id: buildweb
@@ -142,7 +142,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - id: buildweb
@@ -180,7 +180,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - id: deployweb
@@ -221,7 +221,7 @@ jobs:
 
       - name: Start EC2 runner
         id: start-ec2-runner
-        uses: RuiGamitoFRVR/ec2-github-runner_forked@feat/add_custom_runner_labels
+        uses: RuiGamitoFRVR/ec2-github-runner_forked@main
         with:
           mode: start
           github-token: ${{ secrets.GH_TOKEN }}
@@ -254,7 +254,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - id: screenshottests
@@ -335,7 +335,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - name: '[FRVR Action] Web GUI tests'
@@ -370,7 +370,7 @@ jobs:
         with:
           repository: frvraps/frvr-gh-workflows
           token: ${{ secrets.GH_TOKEN }}
-          ref: PNX-958-add-screenshot-tests-action
+          ref: main
           path: ./actions
 
       - id: patch_completion
