@@ -6,10 +6,10 @@ on:
       game_branch:
         required: true
         type: string
-      frvr_tools_branch:
+      game_sha:
         required: true
         type: string
-      comment:
+      frvr_tools_branch:
         required: true
         type: string
     secrets:
@@ -27,8 +27,6 @@ on:
         required: true
       GCS_SA_KEY:
         required: true
-      GCS_MASTERDOC_SERVICE_ACCOUNT_KEY:
-        required: true
 
 jobs:
   ## --- GET GAME METADATA ---
@@ -40,7 +38,7 @@ jobs:
       - name: Checkout game repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.game_branch }}
+          ref: ${{ github.event.inputs.game_sha }}
 
       - name: Checkout private actions
         uses: actions/checkout@v3
@@ -66,7 +64,7 @@ jobs:
       - name: Checkout game repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.game_branch }}
+          ref: ${{ github.event.inputs.game_sha }}
 
       - name: Checkout private actions
         uses: actions/checkout@v3
@@ -76,17 +74,28 @@ jobs:
           ref: main
           path: ./actions
 
+      - name: Output inputs
+        run: |
+          echo "GAME SHA     ====> ${{ inputs.game_sha }}"
+          echo "GAME BRANCH  ====> ${{ inputs.game_branch }}"
+          echo "TOOLS BRANCH ====> ${{ inputs.frvr_tools_branch }}"
+
       - id: buildfbinstant
         name: '[FRVR Action] Build Facebook Instant'
         uses: ./actions/.github/actions/buildfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          game_branch: ${{ inputs.game_sha }}
+          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
           GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
           GCS_SA_KEY: ${{ secrets.GCS_SA_KEY }}
+
+      - name: Setup tmate session
+        if: always()
+        uses: mxschmitt/action-tmate@v3
+      
     outputs:
       filename: ${{ steps.buildfbinstant.outputs.filename }}
       build_json: ${{ steps.buildfbinstant.outputs.build_json }}
@@ -103,7 +112,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
+          ref: ${{ inputs.game_sha }}
 
       - name: Checkout private actions
         uses: actions/checkout@v3
@@ -118,13 +127,14 @@ jobs:
         uses: ./actions/.github/actions/deployfbinstant
         with:
           game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+          game_branch: ${{ inputs.game_branch }}
+          frvr_tools_branch: ${{ inputs.frvr_tools_branch }}
           build_identifier: ${{ needs.build_facebook_instant.outputs.filename }}
-          comment: '[GAME] ${{ github.event.inputs.game_branch }}
-          [ENGINE] ${{ github.event.inputs.frvr_tools_branch }}
+          comment: '[GAME BRANCH] ${{ inputs.game_branch }}
+          [GAME SHA] ${{ inputs.game_sha }}
+          [ENGINE] ${{ inputs.frvr_tools_branch }}
           [USER] ${{ github.actor }}
-          [COMMENT] ${{ github.event.inputs.comment }}'
+          [COMMENT] AUTO DEPLOY'
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           AUTOMATED_RELEASE_CREDENTIALS : ${{ secrets.AUTOMATED_RELEASE_CREDENTIALS }}
           GH_PACKAGE_REGISTRY_PAT: ${{ secrets.GH_PACKAGE_REGISTRY_PAT }}
@@ -133,67 +143,34 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deploy_facebook.outputs.deploy_url }}
 
-  ## --- Update Masterdoc ---
-  update_master_doc:
-    name: Update Masterdoc
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
-
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
-
-      - name: '[FRVR Action] Update Masterdoc'
-        uses: ./actions/.github/actions/updatemasterdoc
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          build_json_filename: ${{ needs.build_facebook_instant.outputs.build_json }}
-          channel: 'instant'
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GCS_DEVOPS_BINARY_BUCKET_KEY: ${{ secrets.GCS_DEVOPS_BINARY_BUCKET_KEY }}
-          GCS_MASTERDOC_SERVICE_ACCOUNT_KEY: ${{ secrets.GCS_MASTERDOC_SERVICE_ACCOUNT_KEY }}
-
   ## --- Notify slack ---
-  notify_slack:
-    name: Notify slack
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
-    steps:
-      - name: Checkout game repo
-        uses: actions/checkout@v3
-        with:
-          path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
-          ref: ${{ github.event.inputs.game_branch }}
+  # notify_slack:
+  #   name: Notify slack
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [gather_game_data, build_facebook_instant, deploy_facebook_instant]
+  #   steps:
+  #     - name: Checkout game repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         path: frvr/game-${{ needs.gather_game_data.outputs.game_name }}
+  #         ref: ${{ github.event.inputs.game_branch }}
 
-      - name: Checkout private actions
-        uses: actions/checkout@v3
-        with:
-          repository: frvraps/frvr-gh-workflows
-          token: ${{ secrets.GH_TOKEN }}
-          ref: main
-          path: ./actions
+  #     - name: Checkout private actions
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: frvraps/frvr-gh-workflows
+  #         token: ${{ secrets.GH_TOKEN }}
+  #         ref: main
+  #         path: ./actions
 
-      - name: '[FRVR Action] Slack Notify from Pipeline'
-        uses: ./actions/.github/actions/slacknotifypipeline
-        with:
-          game_name: ${{ needs.gather_game_data.outputs.game_name }}
-          game_branch: ${{ github.event.inputs.game_branch }}
-          frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
-          channel: 'instant'
-          task_url: ''
-          deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
-          binary_url: ${{ needs.build_facebook_instant.outputs.binary_url }}
+  #     - name: '[FRVR Action] Slack Notify from Pipeline'
+  #       uses: ./actions/.github/actions/slacknotifypipeline
+  #       with:
+  #         game_name: ${{ needs.gather_game_data.outputs.game_name }}
+  #         game_branch: ${{ github.event.inputs.game_branch }}
+  #         frvr_tools_branch: ${{ github.event.inputs.frvr_tools_branch }}
+  #         channel: 'instant'
+  #         task_url: ''
+  #         deploy_url: ${{ needs.deploy_facebook_instant.outputs.deploy_url }}
+  #         binary_url: ${{ needs.build_facebook_instant.outputs.binary_url }}
